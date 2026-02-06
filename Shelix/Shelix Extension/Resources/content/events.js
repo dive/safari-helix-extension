@@ -169,4 +169,6 @@ function initializeShelixEventHandlers() {
     }, {
         capture: true
     });
+
+    ensureReadingProgressBar();
 }

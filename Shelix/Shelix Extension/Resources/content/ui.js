@@ -1,3 +1,39 @@
+function ensureReadingProgressBar() {
+    if (document.getElementById(READING_PROGRESS_BAR_ID)) {
+        return;
+    }
+
+    if (!CSS?.supports?.("animation-timeline: scroll()")) {
+        return;
+    }
+
+    const style = document.createElement("style");
+    style.id = READING_PROGRESS_STYLE_ID;
+    style.textContent = `
+        #${READING_PROGRESS_BAR_ID} {
+            position: fixed;
+            inset: auto 0 0 0;
+            z-index: 2147483647;
+            height: 3px;
+            background: Highlight;
+            transform-origin: left center;
+            animation: shelix-reading-progress linear both;
+            animation-timeline: scroll();
+            pointer-events: none;
+        }
+
+        @keyframes shelix-reading-progress {
+            from { transform: scaleX(0); }
+            to { transform: scaleX(1); }
+        }
+    `;
+    (document.head || document.documentElement).appendChild(style);
+
+    const bar = document.createElement("div");
+    bar.id = READING_PROGRESS_BAR_ID;
+    document.documentElement.appendChild(bar);
+}
+
 function ensureHighlightStyle() {
     if (document.getElementById(INPUT_HIGHLIGHT_STYLE_ID)) {
         return;

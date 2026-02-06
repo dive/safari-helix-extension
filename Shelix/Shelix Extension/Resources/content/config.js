@@ -68,3 +68,6 @@ function shelixHidePopover(el) {
     }
     el.hidden = true;
 }
+
+const READING_PROGRESS_BAR_ID = "shelix-reading-progress";
+const READING_PROGRESS_STYLE_ID = "shelix-reading-progress-style";

@@ -38,6 +38,7 @@ Notes:
 - Pressing `i` with no current selection enters Insert mode in the first available input field.
 - Pressing `Escape` in Normal mode clears the current input highlight.
 - Tab actions run only in Normal mode.
+- Prefix keys (`Space`, `g`) show a bottom-right key-hint popup with available follow-up actions.
 - Input-field selection includes text inputs, textareas, and contenteditable elements.
 
 ## Permissions

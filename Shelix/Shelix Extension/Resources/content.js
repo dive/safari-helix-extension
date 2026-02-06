@@ -18,6 +18,9 @@ const INPUT_FIELD_SELECTOR = [
 const SCROLL_PIXELS_PER_SECOND = 1200;
 const INPUT_HIGHLIGHT_CLASS = "shelix-input-highlight";
 const INPUT_HIGHLIGHT_STYLE_ID = "shelix-input-highlight-style";
+const KEY_HINT_STYLE_ID = "shelix-key-hint-style";
+const KEY_HINT_CONTAINER_ID = "shelix-key-hint";
+
 const TAB_ACTION_MESSAGE_TYPE = "shelix.tabAction";
 const TAB_ACTION = Object.freeze({
     NEXT: "next",
@@ -26,7 +29,59 @@ const TAB_ACTION = Object.freeze({
     CLOSE: "close",
     DUPLICATE: "duplicate"
 });
-const PREFIX_SEQUENCE_TIMEOUT_MS = 1000;
+
+const ACTION = Object.freeze({
+    SCROLL_DOWN_START: "scroll.down.start",
+    SCROLL_UP_START: "scroll.up.start",
+    INPUT_PREVIOUS: "input.previous",
+    INPUT_NEXT: "input.next",
+    INPUT_INSERT_HIGHLIGHTED: "input.insert.highlighted",
+    INPUT_INSERT_FIRST: "input.insert.first",
+    INPUT_CLEAR_HIGHLIGHT: "input.clearHighlight",
+    TAB_NEXT: "tab.next",
+    TAB_PREVIOUS: "tab.previous",
+    TAB_NEW: "tab.new",
+    TAB_CLOSE: "tab.close",
+    TAB_DUPLICATE: "tab.duplicate",
+    PREFIX_G: "prefix.g",
+    PREFIX_SPACE: "prefix.space"
+});
+
+const NORMAL_MODE_ACTIONS = Object.freeze({
+    j: ACTION.SCROLL_DOWN_START,
+    k: ACTION.SCROLL_UP_START,
+    h: ACTION.INPUT_PREVIOUS,
+    l: ACTION.INPUT_NEXT,
+    enter: ACTION.INPUT_INSERT_HIGHLIGHTED,
+    i: ACTION.INPUT_INSERT_FIRST,
+    g: ACTION.PREFIX_G,
+    " ": ACTION.PREFIX_SPACE
+});
+
+const PREFIX_ACTIONS = Object.freeze({
+    g: Object.freeze({
+        n: ACTION.TAB_NEXT,
+        p: ACTION.TAB_PREVIOUS
+    }),
+    " ": Object.freeze({
+        n: ACTION.TAB_NEW,
+        q: ACTION.TAB_CLOSE,
+        d: ACTION.TAB_DUPLICATE
+    })
+});
+
+const PREFIX_TITLES = Object.freeze({
+    g: "Goto",
+    " ": "Space"
+});
+
+const ACTION_LABELS = Object.freeze({
+    [ACTION.TAB_NEXT]: "Next tab",
+    [ACTION.TAB_PREVIOUS]: "Previous tab",
+    [ACTION.TAB_NEW]: "New tab",
+    [ACTION.TAB_CLOSE]: "Close tab",
+    [ACTION.TAB_DUPLICATE]: "Duplicate tab"
+});
 
 let scrollAnimationFrame = null;
 let lastScrollFrameTime = 0;
@@ -34,10 +89,27 @@ let isJPressed = false;
 let isKPressed = false;
 let highlightedField = null;
 let mode = "normal";
-let hasPendingGSequence = false;
-let pendingGTimeout = null;
-let hasPendingSpaceSequence = false;
-let pendingSpaceTimeout = null;
+let pendingPrefixKey = null;
+
+function normalizeKey(event) {
+    return event.key.length === 1 ? event.key.toLowerCase() : event.key.toLowerCase();
+}
+
+function formatKeyLabel(key) {
+    if (key === " ") {
+        return "Space";
+    }
+
+    if (key === "enter") {
+        return "Enter";
+    }
+
+    if (key === "escape") {
+        return "Esc";
+    }
+
+    return key;
+}
 
 function ensureHighlightStyle() {
     if (document.getElementById(INPUT_HIGHLIGHT_STYLE_ID)) {
@@ -55,6 +127,125 @@ function ensureHighlightStyle() {
     `;
 
     (document.head || document.documentElement).appendChild(styleElement);
+}
+
+function ensureKeyHintStyle() {
+    if (document.getElementById(KEY_HINT_STYLE_ID)) {
+        return;
+    }
+
+    const styleElement = document.createElement("style");
+    styleElement.id = KEY_HINT_STYLE_ID;
+    styleElement.textContent = `
+        #${KEY_HINT_CONTAINER_ID} {
+            position: fixed;
+            right: 18px;
+            bottom: 18px;
+            z-index: 2147483647;
+            min-width: 380px;
+            max-width: min(88vw, 760px);
+            padding: 12px 14px 10px;
+            border: 1px solid GrayText;
+            border-radius: 0;
+            background: Canvas;
+            color: CanvasText;
+            font: menu;
+            line-height: 1.25;
+            letter-spacing: 0;
+            box-shadow: none;
+            pointer-events: none;
+            color-scheme: light dark;
+        }
+
+        #${KEY_HINT_CONTAINER_ID}[hidden] {
+            display: none !important;
+        }
+
+        #${KEY_HINT_CONTAINER_ID} * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font: inherit;
+            color: inherit;
+        }
+
+        #${KEY_HINT_CONTAINER_ID} .shelix-key-hint-title {
+            margin-bottom: 6px;
+            font-weight: 600;
+            line-height: 1;
+        }
+
+        #${KEY_HINT_CONTAINER_ID} .shelix-key-hint-row {
+            display: grid;
+            grid-template-columns: 2ch minmax(0, 1fr);
+            align-items: baseline;
+            column-gap: 12px;
+            margin-top: 2px;
+        }
+
+        #${KEY_HINT_CONTAINER_ID} .shelix-key-hint-row:nth-child(2) {
+            margin-top: 0;
+        }
+
+        #${KEY_HINT_CONTAINER_ID} .shelix-key-hint-key {
+            font-weight: 600;
+        }
+
+        #${KEY_HINT_CONTAINER_ID} .shelix-key-hint-label {
+            text-align: left;
+            white-space: pre-wrap;
+        }
+    `;
+
+    (document.head || document.documentElement).appendChild(styleElement);
+}
+
+function getKeyHintContainer() {
+    let container = document.getElementById(KEY_HINT_CONTAINER_ID);
+    if (container) {
+        return container;
+    }
+
+    ensureKeyHintStyle();
+
+    container = document.createElement("div");
+    container.id = KEY_HINT_CONTAINER_ID;
+    container.hidden = true;
+    document.documentElement.appendChild(container);
+
+    return container;
+}
+
+function hideKeyHintPopup() {
+    const container = document.getElementById(KEY_HINT_CONTAINER_ID);
+    if (container) {
+        container.hidden = true;
+    }
+}
+
+function showPrefixKeyHint(prefixKey) {
+    const prefixMap = PREFIX_ACTIONS[prefixKey];
+    if (!prefixMap) {
+        hideKeyHintPopup();
+        return;
+    }
+
+    const rows = Object.entries(prefixMap);
+    if (rows.length === 0) {
+        hideKeyHintPopup();
+        return;
+    }
+
+    const container = getKeyHintContainer();
+    const title = PREFIX_TITLES[prefixKey] || formatKeyLabel(prefixKey);
+
+    container.innerHTML = `<div class="shelix-key-hint-title">${title}</div>${rows.map(([key, action]) => `
+        <div class="shelix-key-hint-row">
+            <span class="shelix-key-hint-key">${formatKeyLabel(key)}</span>
+            <span class="shelix-key-hint-label">${ACTION_LABELS[action] || action}</span>
+        </div>
+    `).join("")}`;
+    container.hidden = false;
 }
 
 function getEditableTarget(target) {
@@ -119,9 +310,9 @@ function syncHighlightVisibility() {
 function setMode(nextMode) {
     mode = nextMode;
     if (mode !== "normal") {
-        clearPendingGSequence();
-        clearPendingSpaceSequence();
+        clearPendingPrefix();
     }
+
     syncHighlightVisibility();
 }
 
@@ -270,20 +461,15 @@ function clearScrollKeys() {
     stopScrollingLoop();
 }
 
-function clearPendingGSequence() {
-    hasPendingGSequence = false;
-    if (pendingGTimeout !== null) {
-        window.clearTimeout(pendingGTimeout);
-        pendingGTimeout = null;
-    }
+function clearPendingPrefix() {
+    pendingPrefixKey = null;
+    hideKeyHintPopup();
 }
 
-function armPendingGSequence() {
-    clearPendingGSequence();
-    hasPendingGSequence = true;
-    pendingGTimeout = window.setTimeout(() => {
-        clearPendingGSequence();
-    }, PREFIX_SEQUENCE_TIMEOUT_MS);
+function armPrefix(prefixKey) {
+    clearPendingPrefix();
+    pendingPrefixKey = prefixKey;
+    showPrefixKeyHint(prefixKey);
 }
 
 function requestTabAction(action) {
@@ -295,83 +481,114 @@ function requestTabAction(action) {
     });
 }
 
-function handleGSequence(event, key) {
-    if (!hasPendingGSequence) {
+function runAction(action) {
+    if (action === ACTION.SCROLL_DOWN_START) {
+        isJPressed = true;
+        ensureScrollingLoop();
+        return;
+    }
+
+    if (action === ACTION.SCROLL_UP_START) {
+        isKPressed = true;
+        ensureScrollingLoop();
+        return;
+    }
+
+    if (action === ACTION.INPUT_PREVIOUS) {
+        highlightRelativeField(-1);
+        return;
+    }
+
+    if (action === ACTION.INPUT_NEXT) {
+        highlightRelativeField(1);
+        return;
+    }
+
+    if (action === ACTION.INPUT_INSERT_HIGHLIGHTED) {
+        const field = ensureHighlightedField();
+        if (field) {
+            enterInsertMode(field);
+        }
+
+        return;
+    }
+
+    if (action === ACTION.INPUT_INSERT_FIRST) {
+        const fields = getNavigableFields();
+        const field = getHighlightedField(fields) || fields[0] || null;
+        if (field) {
+            enterInsertMode(field);
+        }
+
+        return;
+    }
+
+    if (action === ACTION.INPUT_CLEAR_HIGHLIGHT) {
+        setHighlightedField(null);
+        return;
+    }
+
+    if (action === ACTION.TAB_NEXT) {
+        requestTabAction(TAB_ACTION.NEXT);
+        return;
+    }
+
+    if (action === ACTION.TAB_PREVIOUS) {
+        requestTabAction(TAB_ACTION.PREVIOUS);
+        return;
+    }
+
+    if (action === ACTION.TAB_NEW) {
+        requestTabAction(TAB_ACTION.NEW);
+        return;
+    }
+
+    if (action === ACTION.TAB_CLOSE) {
+        requestTabAction(TAB_ACTION.CLOSE);
+        return;
+    }
+
+    if (action === ACTION.TAB_DUPLICATE) {
+        requestTabAction(TAB_ACTION.DUPLICATE);
+        return;
+    }
+
+    if (action === ACTION.PREFIX_G) {
+        armPrefix("g");
+        return;
+    }
+
+    if (action === ACTION.PREFIX_SPACE) {
+        armPrefix(" ");
+    }
+}
+
+function handlePendingPrefix(event, key) {
+    if (!pendingPrefixKey) {
         return false;
     }
 
     if (key === "shift") {
-        return false;
-    }
-
-    if (key === "g") {
-        event.preventDefault();
-        armPendingGSequence();
         return true;
     }
 
-    clearPendingGSequence();
-
-    let action = null;
-    if (key === "n") {
-        action = TAB_ACTION.NEXT;
-    } else if (key === "p") {
-        action = TAB_ACTION.PREVIOUS;
-    }
-
-    if (!action) {
-        return false;
-    }
-
-    event.preventDefault();
-    requestTabAction(action);
-    return true;
-}
-
-function clearPendingSpaceSequence() {
-    hasPendingSpaceSequence = false;
-    if (pendingSpaceTimeout !== null) {
-        window.clearTimeout(pendingSpaceTimeout);
-        pendingSpaceTimeout = null;
-    }
-}
-
-function armPendingSpaceSequence() {
-    clearPendingSpaceSequence();
-    hasPendingSpaceSequence = true;
-    pendingSpaceTimeout = window.setTimeout(() => {
-        clearPendingSpaceSequence();
-    }, PREFIX_SEQUENCE_TIMEOUT_MS);
-}
-
-function handleSpaceSequence(event, key) {
-    if (!hasPendingSpaceSequence) {
-        return false;
-    }
-
-    if (key === " ") {
+    if (key === "escape") {
         event.preventDefault();
-        armPendingSpaceSequence();
+        clearPendingPrefix();
         return true;
     }
 
-    clearPendingSpaceSequence();
+    const prefixMap = PREFIX_ACTIONS[pendingPrefixKey] || null;
+    const action = prefixMap ? prefixMap[key] : null;
 
-    let action = null;
-    if (key === "n") {
-        action = TAB_ACTION.NEW;
-    } else if (key === "q") {
-        action = TAB_ACTION.CLOSE;
-    } else if (key === "d") {
-        action = TAB_ACTION.DUPLICATE;
-    }
+    clearPendingPrefix();
+    event.preventDefault();
 
     if (!action) {
-        return false;
+        return true;
     }
 
-    event.preventDefault();
-    requestTabAction(action);
+    runAction(action);
     return true;
 }
 
@@ -388,11 +605,8 @@ document.addEventListener("keydown", (event) => {
         setMode("normal");
     }
 
-    const key = event.key.toLowerCase();
-    if (handleGSequence(event, key)) {
-        return;
-    }
-    if (handleSpaceSequence(event, key)) {
+    const key = normalizeKey(event);
+    if (handlePendingPrefix(event, key)) {
         return;
     }
 
@@ -404,30 +618,11 @@ document.addEventListener("keydown", (event) => {
 
     if (key === "escape" && mode === "normal") {
         event.preventDefault();
-        setHighlightedField(null);
+        runAction(ACTION.INPUT_CLEAR_HIGHLIGHT);
         return;
     }
 
-    if (key === "i" && mode === "normal") {
-        const fields = getNavigableFields();
-        const field = getHighlightedField(fields) || fields[0] || null;
-        if (!field) {
-            return;
-        }
-
-        event.preventDefault();
-        enterInsertMode(field);
-        return;
-    }
-
-    if (key === "enter" && mode === "normal") {
-        const field = ensureHighlightedField();
-        if (!field) {
-            return;
-        }
-
-        event.preventDefault();
-        enterInsertMode(field);
+    if (mode !== "normal") {
         return;
     }
 
@@ -435,42 +630,13 @@ document.addEventListener("keydown", (event) => {
         return;
     }
 
-    if (key === "g" && mode === "normal") {
-        event.preventDefault();
-        armPendingGSequence();
+    const action = NORMAL_MODE_ACTIONS[key];
+    if (!action) {
         return;
     }
 
-    if (key === " " && mode === "normal") {
-        event.preventDefault();
-        armPendingSpaceSequence();
-        return;
-    }
-
-    if (key === "j") {
-        event.preventDefault();
-        isJPressed = true;
-        ensureScrollingLoop();
-        return;
-    }
-
-    if (key === "k") {
-        event.preventDefault();
-        isKPressed = true;
-        ensureScrollingLoop();
-        return;
-    }
-
-    if (key === "h") {
-        event.preventDefault();
-        highlightRelativeField(-1);
-        return;
-    }
-
-    if (key === "l") {
-        event.preventDefault();
-        highlightRelativeField(1);
-    }
+    event.preventDefault();
+    runAction(action);
 }, {
     capture: true
 });
@@ -480,7 +646,7 @@ document.addEventListener("keyup", (event) => {
         return;
     }
 
-    const key = event.key.toLowerCase();
+    const key = normalizeKey(event);
     if (key === "j") {
         isJPressed = false;
     } else if (key === "k") {
@@ -496,18 +662,15 @@ document.addEventListener("keyup", (event) => {
     capture: true
 });
 
-window.addEventListener("blur", clearScrollKeys);
+window.addEventListener("blur", () => {
+    clearScrollKeys();
+    clearPendingPrefix();
+});
+
 document.addEventListener("visibilitychange", () => {
     if (document.visibilityState !== "visible") {
         clearScrollKeys();
-    }
-});
-window.addEventListener("blur", clearPendingGSequence);
-window.addEventListener("blur", clearPendingSpaceSequence);
-document.addEventListener("visibilitychange", () => {
-    if (document.visibilityState !== "visible") {
-        clearPendingGSequence();
-        clearPendingSpaceSequence();
+        clearPendingPrefix();
     }
 });
 

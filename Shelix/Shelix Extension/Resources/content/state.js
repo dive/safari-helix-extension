@@ -3,6 +3,7 @@ const state = {
     lastScrollFrameTime: 0,
     isJPressed: false,
     isKPressed: false,
+    scrollBoundaryFrames: 0,
     highlightedField: null,
     mode: "normal",
     pendingPrefixKey: null,

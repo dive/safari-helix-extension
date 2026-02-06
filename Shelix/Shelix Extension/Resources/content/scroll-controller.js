@@ -9,6 +9,7 @@ function stopScrollingLoop() {
     }
 
     state.lastScrollFrameTime = 0;
+    state.scrollBoundaryFrames = 0;
 }
 
 function tickScroll(timestamp) {
@@ -26,11 +27,22 @@ function tickScroll(timestamp) {
     state.lastScrollFrameTime = timestamp;
     const distance = direction * SCROLL_PIXELS_PER_SECOND * (elapsedMs / 1000);
 
+    const scrollBefore = window.scrollY;
     window.scrollBy({
         left: 0,
         top: distance,
         behavior: "auto"
     });
+
+    if (window.scrollY === scrollBefore) {
+        state.scrollBoundaryFrames += 1;
+        if (state.scrollBoundaryFrames >= 3) {
+            stopScrollingLoop();
+            return;
+        }
+    } else {
+        state.scrollBoundaryFrames = 0;
+    }
 
     state.scrollAnimationFrame = window.requestAnimationFrame(tickScroll);
 }
@@ -40,6 +52,7 @@ function ensureScrollingLoop() {
         return;
     }
 
+    state.scrollBoundaryFrames = 0;
     state.scrollAnimationFrame = window.requestAnimationFrame(tickScroll);
 }
 

@@ -1,10 +1,15 @@
 function show(enabled, useSettingsInsteadOfPreferences) {
-    if (useSettingsInsteadOfPreferences) {
-        document.getElementsByClassName('state-on')[0].innerText = "Shelix’s extension is currently on. You can turn it off in the Extensions section of Safari Settings.";
-        document.getElementsByClassName('state-off')[0].innerText = "Shelix’s extension is currently off. You can turn it on in the Extensions section of Safari Settings.";
-        document.getElementsByClassName('state-unknown')[0].innerText = "You can turn on Shelix’s extension in the Extensions section of Safari Settings.";
-        document.getElementsByClassName('open-preferences')[0].innerText = "Quit and Open Safari Settings…";
-    }
+    const settingsLabel = useSettingsInsteadOfPreferences ? "Settings" : "Preferences";
+    const location = `Safari ${settingsLabel} > Extensions`;
+
+    document.getElementsByClassName('state-on')[0].innerText =
+        `Shelix is on — Helix keybindings are active for fast, keyboard‑first browsing. Manage it in ${location}.`;
+    document.getElementsByClassName('state-off')[0].innerText =
+        `Shelix is off. Enable it in ${location} to get Helix keybindings for navigation, scrolling, tabs, and history — without leaving the home row.`;
+    document.getElementsByClassName('state-unknown')[0].innerText =
+        `Enable Shelix in ${location} to bring Helix keybindings to the browser.`;
+    document.getElementsByClassName('open-preferences')[0].innerText =
+        (useSettingsInsteadOfPreferences ? "Quit and Open Safari Settings…" : "Quit and Open Safari Preferences…");
 
     if (typeof enabled === "boolean") {
         document.body.classList.toggle(`state-on`, enabled);

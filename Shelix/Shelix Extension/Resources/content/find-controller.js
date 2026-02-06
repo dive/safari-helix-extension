@@ -546,7 +546,7 @@ function scrollActiveFindMatchIntoView() {
         return;
     }
 
-    if (activeMatch.element instanceof Element) {
+    if (activeMatch.element instanceof Element && activeMatch.element.isConnected) {
         activeMatch.element.scrollIntoView({
             block: "center",
             inline: "nearest"
@@ -559,7 +559,7 @@ function scrollActiveFindMatchIntoView() {
     }
 
     const container = getFindRangeContainerElement(activeMatch.range);
-    if (!container) {
+    if (!container || !container.isConnected) {
         return;
     }
 

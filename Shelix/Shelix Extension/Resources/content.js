@@ -37,6 +37,9 @@ const ACTION = Object.freeze({
     SCROLL_BOTTOM: "scroll.bottom",
     SCROLL_HALF_PAGE_UP: "scroll.halfPage.up",
     SCROLL_HALF_PAGE_DOWN: "scroll.halfPage.down",
+    FIND_OPEN: "find.open",
+    FIND_NEXT: "find.next",
+    FIND_PREVIOUS: "find.previous",
     INPUT_PREVIOUS: "input.previous",
     INPUT_NEXT: "input.next",
     INPUT_INSERT_HIGHLIGHTED: "input.insert.highlighted",
@@ -54,6 +57,9 @@ const ACTION = Object.freeze({
 const NORMAL_MODE_ACTIONS = Object.freeze({
     j: ACTION.SCROLL_DOWN_START,
     k: ACTION.SCROLL_UP_START,
+    "/": ACTION.FIND_OPEN,
+    n: ACTION.FIND_NEXT,
+    "shift+n": ACTION.FIND_PREVIOUS,
     h: ACTION.INPUT_PREVIOUS,
     l: ACTION.INPUT_NEXT,
     enter: ACTION.INPUT_INSERT_HIGHLIGHTED,
@@ -86,6 +92,9 @@ const ACTION_LABELS = Object.freeze({
     [ACTION.SCROLL_BOTTOM]: "Bottom of page",
     [ACTION.SCROLL_HALF_PAGE_UP]: "Half page up",
     [ACTION.SCROLL_HALF_PAGE_DOWN]: "Half page down",
+    [ACTION.FIND_OPEN]: "Find in page",
+    [ACTION.FIND_NEXT]: "Find next match",
+    [ACTION.FIND_PREVIOUS]: "Find previous match",
     [ACTION.TAB_NEXT]: "Next tab",
     [ACTION.TAB_PREVIOUS]: "Previous tab",
     [ACTION.TAB_NEW]: "New tab",
@@ -100,9 +109,19 @@ let isKPressed = false;
 let highlightedField = null;
 let mode = "normal";
 let pendingPrefixKey = null;
+let lastFindQuery = "";
 
 function normalizeKey(event) {
     return event.key.length === 1 ? event.key.toLowerCase() : event.key.toLowerCase();
+}
+
+function getActionKey(event) {
+    const key = normalizeKey(event);
+    if (event.shiftKey && key.length === 1 && key >= "a" && key <= "z") {
+        return `shift+${key}`;
+    }
+
+    return key;
 }
 
 function formatKeyLabel(key) {
@@ -491,6 +510,30 @@ function requestTabAction(action) {
     });
 }
 
+function findInPage(query, backwards) {
+    if (typeof window.find !== "function") {
+        return false;
+    }
+
+    return window.find(query, false, backwards, true, false, false, false);
+}
+
+function openFindPrompt() {
+    const query = window.prompt("Find in page:", lastFindQuery);
+    if (query === null) {
+        return false;
+    }
+
+    const normalizedQuery = query.trim();
+    if (!normalizedQuery) {
+        lastFindQuery = "";
+        return false;
+    }
+
+    lastFindQuery = normalizedQuery;
+    return true;
+}
+
 function runAction(action) {
     if (action === ACTION.SCROLL_DOWN_START) {
         isJPressed = true;
@@ -542,6 +585,31 @@ function runAction(action) {
             top: Math.max(1, window.innerHeight / 2),
             behavior: "auto"
         });
+        return;
+    }
+
+    if (action === ACTION.FIND_OPEN) {
+        clearScrollKeys();
+        if (openFindPrompt()) {
+            findInPage(lastFindQuery, false);
+        }
+
+        return;
+    }
+
+    if (action === ACTION.FIND_NEXT) {
+        if (lastFindQuery) {
+            findInPage(lastFindQuery, false);
+        }
+
+        return;
+    }
+
+    if (action === ACTION.FIND_PREVIOUS) {
+        if (lastFindQuery) {
+            findInPage(lastFindQuery, true);
+        }
+
         return;
     }
 
@@ -698,7 +766,7 @@ document.addEventListener("keydown", (event) => {
         return;
     }
 
-    const action = NORMAL_MODE_ACTIONS[key];
+    const action = NORMAL_MODE_ACTIONS[getActionKey(event)];
     if (!action) {
         return;
     }

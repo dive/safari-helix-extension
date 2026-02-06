@@ -20,6 +20,9 @@ const INPUT_HIGHLIGHT_CLASS = "shelix-input-highlight";
 const INPUT_HIGHLIGHT_STYLE_ID = "shelix-input-highlight-style";
 const KEY_HINT_STYLE_ID = "shelix-key-hint-style";
 const KEY_HINT_CONTAINER_ID = "shelix-key-hint";
+const KEY_HINT_MIN_WIDTH_PX = 260;
+const KEY_HINT_MAX_WIDTH_PX = 640;
+const KEY_HINT_VIEWPORT_MARGIN_PX = 24;
 
 const TAB_ACTION_MESSAGE_TYPE = "shelix.tabAction";
 const TAB_ACTION = Object.freeze({
@@ -191,8 +194,9 @@ function ensureKeyHintStyle() {
             right: 18px;
             bottom: 18px;
             z-index: 2147483647;
-            min-width: 380px;
-            max-width: min(88vw, 760px);
+            min-width: 0;
+            width: auto;
+            max-width: calc(100vw - ${KEY_HINT_VIEWPORT_MARGIN_PX}px);
             padding: 12px 14px 10px;
             border: 1px solid GrayText;
             border-radius: 0;
@@ -204,6 +208,9 @@ function ensureKeyHintStyle() {
             box-shadow: none;
             pointer-events: none;
             color-scheme: light dark;
+            max-height: min(70vh, 620px);
+            overflow: auto;
+            overscroll-behavior: contain;
         }
 
         #${KEY_HINT_CONTAINER_ID}[hidden] {
@@ -224,25 +231,22 @@ function ensureKeyHintStyle() {
             line-height: 1;
         }
 
-        #${KEY_HINT_CONTAINER_ID} .shelix-key-hint-row {
+        #${KEY_HINT_CONTAINER_ID} .shelix-key-hint-rows {
             display: grid;
-            grid-template-columns: 2ch minmax(0, 1fr);
-            align-items: baseline;
+            grid-template-columns: max-content minmax(0, 1fr);
             column-gap: 12px;
-            margin-top: 2px;
-        }
-
-        #${KEY_HINT_CONTAINER_ID} .shelix-key-hint-row:nth-child(2) {
-            margin-top: 0;
+            row-gap: 4px;
+            align-items: start;
         }
 
         #${KEY_HINT_CONTAINER_ID} .shelix-key-hint-key {
             font-weight: 600;
+            white-space: nowrap;
         }
 
         #${KEY_HINT_CONTAINER_ID} .shelix-key-hint-label {
             text-align: left;
-            white-space: pre-wrap;
+            white-space: normal;
         }
     `;
 
@@ -281,12 +285,44 @@ function showKeyHintPopup(title, rows) {
     }
 
     const container = getKeyHintContainer();
-    container.innerHTML = `<div class="shelix-key-hint-title">${title}</div>${rows.map((row) => `
-        <div class="shelix-key-hint-row">
-            <span class="shelix-key-hint-key">${row.key}</span>
-            <span class="shelix-key-hint-label">${row.label}</span>
-        </div>
-    `).join("")}`;
+    const titleElement = document.createElement("div");
+    titleElement.className = "shelix-key-hint-title";
+    titleElement.textContent = title;
+
+    const rowsElement = document.createElement("div");
+    rowsElement.className = "shelix-key-hint-rows";
+
+    for (const row of rows) {
+        const keyElement = document.createElement("span");
+        keyElement.className = "shelix-key-hint-key";
+        keyElement.textContent = row.key;
+
+        const labelElement = document.createElement("span");
+        labelElement.className = "shelix-key-hint-label";
+        labelElement.textContent = row.label;
+
+        rowsElement.append(keyElement, labelElement);
+    }
+
+    container.replaceChildren(titleElement, rowsElement);
+    container.hidden = false;
+    container.style.visibility = "hidden";
+    container.style.width = "";
+
+    const computedStyle = window.getComputedStyle(container);
+    const horizontalInsets = parseFloat(computedStyle.paddingLeft)
+        + parseFloat(computedStyle.paddingRight)
+        + parseFloat(computedStyle.borderLeftWidth)
+        + parseFloat(computedStyle.borderRightWidth);
+    const contentWidth = Math.max(titleElement.scrollWidth, rowsElement.scrollWidth);
+    const idealWidth = Math.ceil(contentWidth + horizontalInsets);
+    const viewportLimit = Math.max(160, window.innerWidth - KEY_HINT_VIEWPORT_MARGIN_PX);
+    const minWidth = Math.min(KEY_HINT_MIN_WIDTH_PX, viewportLimit);
+    const maxWidth = Math.min(KEY_HINT_MAX_WIDTH_PX, viewportLimit);
+    const boundedWidth = Math.min(maxWidth, Math.max(minWidth, idealWidth));
+
+    container.style.width = `${boundedWidth}px`;
+    container.style.visibility = "";
     container.hidden = false;
 }
 

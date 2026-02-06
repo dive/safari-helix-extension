@@ -502,12 +502,33 @@ function rebuildFindResults(query) {
     buildFindMatchesWithoutHighlights(entries);
 }
 
+function isFindMatchValid(match) {
+    if (!match) {
+        return false;
+    }
+
+    if (match.range instanceof Range) {
+        return match.range.startContainer.isConnected;
+    }
+
+    if (match.element instanceof Element) {
+        return match.element.isConnected;
+    }
+
+    return false;
+}
+
 function getActiveFindMatch() {
     if (state.activeFindMatchIndex < 0 || state.activeFindMatchIndex >= state.findMatches.length) {
         return null;
     }
 
-    return state.findMatches[state.activeFindMatchIndex] || null;
+    const match = state.findMatches[state.activeFindMatchIndex] || null;
+    if (match && !isFindMatchValid(match)) {
+        return null;
+    }
+
+    return match;
 }
 
 function updateRenderedFindHighlights() {

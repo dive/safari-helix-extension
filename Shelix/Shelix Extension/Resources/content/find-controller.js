@@ -136,6 +136,7 @@ function getFindUiElements(createIfMissing = false) {
         doneButton.id = FIND_UI_DONE_BUTTON_ID;
         doneButton.type = "button";
         doneButton.textContent = "Done";
+        doneButton.setAttribute("aria-label", "Close find bar");
 
         container.append(input, status, previousButton, nextButton, doneButton);
         document.documentElement.appendChild(container);

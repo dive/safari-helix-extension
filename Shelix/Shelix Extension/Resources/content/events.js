@@ -89,10 +89,6 @@ function initializeShelixEventHandlers() {
     });
 
     document.addEventListener("keyup", (event) => {
-        if (event.metaKey || event.ctrlKey || event.altKey) {
-            return;
-        }
-
         if (isTargetInsideFindUi(event.target)) {
             return;
         }

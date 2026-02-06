@@ -51,6 +51,14 @@ function ensureKeyHintStyle() {
             margin: 0;
         }
 
+        @supports (backdrop-filter: blur(12px)) or (-webkit-backdrop-filter: blur(12px)) {
+            #${KEY_HINT_CONTAINER_ID} {
+                background: color-mix(in srgb, Canvas 78%, transparent);
+                -webkit-backdrop-filter: saturate(180%) blur(12px);
+                backdrop-filter: saturate(180%) blur(12px);
+            }
+        }
+
         #${KEY_HINT_CONTAINER_ID}[hidden] {
             display: none !important;
         }
@@ -112,6 +120,14 @@ function ensureKeyHintStyle() {
                 overflow: auto;
                 overscroll-behavior: contain;
                 margin: 0;
+            }
+
+            @supports (backdrop-filter: blur(12px)) or (-webkit-backdrop-filter: blur(12px)) {
+                :scope {
+                    background: color-mix(in srgb, Canvas 78%, transparent);
+                    -webkit-backdrop-filter: saturate(180%) blur(12px);
+                    backdrop-filter: saturate(180%) blur(12px);
+                }
             }
 
             :scope[hidden] {

@@ -28,6 +28,14 @@ function ensureFindUiStyle() {
             margin: 0;
         }
 
+        @supports (backdrop-filter: blur(12px)) or (-webkit-backdrop-filter: blur(12px)) {
+            #${FIND_UI_CONTAINER_ID} {
+                background: color-mix(in srgb, Canvas 78%, transparent);
+                -webkit-backdrop-filter: saturate(180%) blur(12px);
+                backdrop-filter: saturate(180%) blur(12px);
+            }
+        }
+
         #${FIND_UI_CONTAINER_ID}[hidden] {
             display: none !important;
         }
@@ -99,6 +107,14 @@ function ensureFindUiStyle() {
                 box-shadow: 0 3px 12px rgba(0, 0, 0, 0.18);
                 max-width: calc(100vw - 24px);
                 margin: 0;
+            }
+
+            @supports (backdrop-filter: blur(12px)) or (-webkit-backdrop-filter: blur(12px)) {
+                :scope {
+                    background: color-mix(in srgb, Canvas 78%, transparent);
+                    -webkit-backdrop-filter: saturate(180%) blur(12px);
+                    backdrop-filter: saturate(180%) blur(12px);
+                }
             }
 
             :scope[hidden] {

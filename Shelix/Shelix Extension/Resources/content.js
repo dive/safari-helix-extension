@@ -35,6 +35,8 @@ const ACTION = Object.freeze({
     SCROLL_UP_START: "scroll.up.start",
     SCROLL_TOP: "scroll.top",
     SCROLL_BOTTOM: "scroll.bottom",
+    SCROLL_HALF_PAGE_UP: "scroll.halfPage.up",
+    SCROLL_HALF_PAGE_DOWN: "scroll.halfPage.down",
     INPUT_PREVIOUS: "input.previous",
     INPUT_NEXT: "input.next",
     INPUT_INSERT_HIGHLIGHTED: "input.insert.highlighted",
@@ -82,6 +84,8 @@ const PREFIX_TITLES = Object.freeze({
 const ACTION_LABELS = Object.freeze({
     [ACTION.SCROLL_TOP]: "Top of page",
     [ACTION.SCROLL_BOTTOM]: "Bottom of page",
+    [ACTION.SCROLL_HALF_PAGE_UP]: "Half page up",
+    [ACTION.SCROLL_HALF_PAGE_DOWN]: "Half page down",
     [ACTION.TAB_NEXT]: "Next tab",
     [ACTION.TAB_PREVIOUS]: "Previous tab",
     [ACTION.TAB_NEW]: "New tab",
@@ -521,6 +525,26 @@ function runAction(action) {
         return;
     }
 
+    if (action === ACTION.SCROLL_HALF_PAGE_UP) {
+        clearScrollKeys();
+        window.scrollBy({
+            left: 0,
+            top: -Math.max(1, window.innerHeight / 2),
+            behavior: "auto"
+        });
+        return;
+    }
+
+    if (action === ACTION.SCROLL_HALF_PAGE_DOWN) {
+        clearScrollKeys();
+        window.scrollBy({
+            left: 0,
+            top: Math.max(1, window.innerHeight / 2),
+            behavior: "auto"
+        });
+        return;
+    }
+
     if (action === ACTION.INPUT_PREVIOUS) {
         highlightRelativeField(-1);
         return;
@@ -624,7 +648,7 @@ document.addEventListener("keydown", (event) => {
         return;
     }
 
-    if (event.metaKey || event.ctrlKey || event.altKey) {
+    if (event.metaKey || event.altKey) {
         return;
     }
 
@@ -633,6 +657,23 @@ document.addEventListener("keydown", (event) => {
     }
 
     const key = normalizeKey(event);
+
+    if (event.ctrlKey) {
+        if (mode !== "normal" || isEditableTarget(event.target)) {
+            return;
+        }
+
+        if (key === "u") {
+            event.preventDefault();
+            runAction(ACTION.SCROLL_HALF_PAGE_UP);
+        } else if (key === "d") {
+            event.preventDefault();
+            runAction(ACTION.SCROLL_HALF_PAGE_DOWN);
+        }
+
+        return;
+    }
+
     if (handlePendingPrefix(event, key)) {
         return;
     }

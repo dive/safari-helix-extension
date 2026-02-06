@@ -6,7 +6,7 @@ Shelix is a Safari extension that brings Helix keybindings to the browser for ke
 - Helix-style keyboard-first navigation
 - Smooth continuous page scrolling with home-row keys
 - Input-field focus navigation without leaving the keyboard
-- Foundation for tab and history shortcuts
+- Helix-style tab actions with `g`-prefixed key sequences
 
 ## Requirements
 - Safari on macOS (Safari 14 or later recommended)
@@ -26,16 +26,23 @@ Shelix is a Safari extension that brings Helix keybindings to the browser for ke
 - `h` / `l`: move highlighted input selection to previous/next input field
 - `Enter` or `i`: enter Insert mode and focus the highlighted input field
 - `Escape`: leave Insert mode and return to Normal mode
+- `g t`: switch to next tab
+- `g T`: switch to previous tab
+- `g n`: open a new tab
+- `g c`: close the current tab
+- `g d`: duplicate the current tab
 
 Notes:
 - In Normal mode, `h`/`l` only changes highlight and does not activate editing.
 - In Insert mode, typing works normally in the focused field.
 - Pressing `i` with no current selection enters Insert mode in the first available input field.
 - Pressing `Escape` in Normal mode clears the current input highlight.
+- Tab actions run only in Normal mode.
 - Input-field selection includes text inputs, textareas, and contenteditable elements.
 
 ## Permissions
 Shelix is designed to request only what it needs for keyboard-first browsing.
+- `tabs`: required for next/previous tab navigation, new tab, close tab, and duplicate tab actions.
 
 ## Troubleshooting
 - If you do not see the extension, restart Safari and check `Safari Settings > Extensions`.

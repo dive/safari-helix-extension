@@ -18,6 +18,15 @@ const INPUT_FIELD_SELECTOR = [
 const SCROLL_PIXELS_PER_SECOND = 1200;
 const INPUT_HIGHLIGHT_CLASS = "shelix-input-highlight";
 const INPUT_HIGHLIGHT_STYLE_ID = "shelix-input-highlight-style";
+const TAB_ACTION_MESSAGE_TYPE = "shelix.tabAction";
+const TAB_ACTION = Object.freeze({
+    NEXT: "next",
+    PREVIOUS: "previous",
+    NEW: "new",
+    CLOSE: "close",
+    DUPLICATE: "duplicate"
+});
+const G_SEQUENCE_TIMEOUT_MS = 1000;
 
 let scrollAnimationFrame = null;
 let lastScrollFrameTime = 0;
@@ -25,6 +34,8 @@ let isJPressed = false;
 let isKPressed = false;
 let highlightedField = null;
 let mode = "normal";
+let hasPendingGSequence = false;
+let pendingGTimeout = null;
 
 function ensureHighlightStyle() {
     if (document.getElementById(INPUT_HIGHLIGHT_STYLE_ID)) {
@@ -105,6 +116,9 @@ function syncHighlightVisibility() {
 
 function setMode(nextMode) {
     mode = nextMode;
+    if (mode !== "normal") {
+        clearPendingGSequence();
+    }
     syncHighlightVisibility();
 }
 
@@ -253,6 +267,68 @@ function clearScrollKeys() {
     stopScrollingLoop();
 }
 
+function clearPendingGSequence() {
+    hasPendingGSequence = false;
+    if (pendingGTimeout !== null) {
+        window.clearTimeout(pendingGTimeout);
+        pendingGTimeout = null;
+    }
+}
+
+function armPendingGSequence() {
+    clearPendingGSequence();
+    hasPendingGSequence = true;
+    pendingGTimeout = window.setTimeout(() => {
+        clearPendingGSequence();
+    }, G_SEQUENCE_TIMEOUT_MS);
+}
+
+function requestTabAction(action) {
+    browser.runtime.sendMessage({
+        type: TAB_ACTION_MESSAGE_TYPE,
+        action
+    }).catch(() => {
+        // Background script may be unavailable briefly during extension reloads.
+    });
+}
+
+function handleGSequence(event, key) {
+    if (!hasPendingGSequence) {
+        return false;
+    }
+
+    if (key === "shift") {
+        return false;
+    }
+
+    if (key === "g") {
+        event.preventDefault();
+        armPendingGSequence();
+        return true;
+    }
+
+    clearPendingGSequence();
+
+    let action = null;
+    if (key === "t") {
+        action = event.shiftKey ? TAB_ACTION.PREVIOUS : TAB_ACTION.NEXT;
+    } else if (key === "n") {
+        action = TAB_ACTION.NEW;
+    } else if (key === "c") {
+        action = TAB_ACTION.CLOSE;
+    } else if (key === "d") {
+        action = TAB_ACTION.DUPLICATE;
+    }
+
+    if (!action) {
+        return false;
+    }
+
+    event.preventDefault();
+    requestTabAction(action);
+    return true;
+}
+
 document.addEventListener("keydown", (event) => {
     if (event.defaultPrevented || event.isComposing) {
         return;
@@ -267,6 +343,10 @@ document.addEventListener("keydown", (event) => {
     }
 
     const key = event.key.toLowerCase();
+    if (handleGSequence(event, key)) {
+        return;
+    }
+
     if (key === "escape" && mode === "insert") {
         event.preventDefault();
         exitInsertMode();
@@ -303,6 +383,12 @@ document.addEventListener("keydown", (event) => {
     }
 
     if (isEditableTarget(event.target)) {
+        return;
+    }
+
+    if (key === "g" && mode === "normal") {
+        event.preventDefault();
+        armPendingGSequence();
         return;
     }
 
@@ -359,6 +445,12 @@ window.addEventListener("blur", clearScrollKeys);
 document.addEventListener("visibilitychange", () => {
     if (document.visibilityState !== "visible") {
         clearScrollKeys();
+    }
+});
+window.addEventListener("blur", clearPendingGSequence);
+document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState !== "visible") {
+        clearPendingGSequence();
     }
 });
 

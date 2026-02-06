@@ -86,6 +86,70 @@ function ensureKeyHintStyle() {
             text-align: left;
             white-space: normal;
         }
+
+        @scope (#${KEY_HINT_CONTAINER_ID}) {
+            :scope {
+                position: fixed;
+                inset: unset;
+                right: 18px;
+                bottom: 18px;
+                z-index: 2147483647;
+                min-width: 0;
+                width: auto;
+                max-width: calc(100vw - ${KEY_HINT_VIEWPORT_MARGIN_PX}px);
+                padding: 12px 14px 10px;
+                border: 1px solid GrayText;
+                border-radius: 0;
+                background: Canvas;
+                color: CanvasText;
+                font: menu;
+                line-height: 1.25;
+                letter-spacing: 0;
+                box-shadow: none;
+                pointer-events: none;
+                color-scheme: light dark;
+                max-height: min(70vh, 620px);
+                overflow: auto;
+                overscroll-behavior: contain;
+                margin: 0;
+            }
+
+            :scope[hidden] {
+                display: none !important;
+            }
+
+            * {
+                box-sizing: border-box;
+                margin: 0;
+                padding: 0;
+                font: inherit;
+                color: inherit;
+            }
+
+            .shelix-key-hint-title {
+                margin-bottom: 6px;
+                font-weight: 600;
+                line-height: 1;
+            }
+
+            .shelix-key-hint-rows {
+                display: grid;
+                grid-template-columns: max-content minmax(0, 1fr);
+                column-gap: 12px;
+                row-gap: 4px;
+                align-items: start;
+            }
+
+            .shelix-key-hint-key {
+                font-weight: 600;
+                white-space: nowrap;
+            }
+
+            .shelix-key-hint-label {
+                text-align: left;
+                white-space: normal;
+            }
+        }
     `;
 
     (document.head || document.documentElement).appendChild(styleElement);

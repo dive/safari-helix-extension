@@ -45,6 +45,48 @@ function ensureLinkHintStyle() {
         .${LINK_HINT_LABEL_CLASS}[data-state="partial"] .shelix-hint-active-char {
             color: #ff7a00;
         }
+
+        @scope (#${LINK_HINT_OVERLAY_ID}) {
+            :scope {
+                position: fixed;
+                inset: 0;
+                z-index: 2147483647;
+                pointer-events: none;
+                color-scheme: light dark;
+            }
+
+            :scope[hidden] {
+                display: none !important;
+            }
+
+            .${LINK_HINT_LABEL_CLASS} {
+                position: absolute;
+                padding: 1px 4px;
+                border: 1px solid GrayText;
+                border-radius: 3px;
+                background: Canvas;
+                color: GrayText;
+                font: menu;
+                font-weight: 600;
+                line-height: 1.2;
+                letter-spacing: 0.5px;
+                text-transform: uppercase;
+                white-space: nowrap;
+                pointer-events: none;
+            }
+
+            .${LINK_HINT_LABEL_CLASS} .shelix-hint-active-char {
+                color: CanvasText;
+            }
+
+            .${LINK_HINT_LABEL_CLASS}[data-state="partial"] {
+                border-color: #ff7a00;
+            }
+
+            .${LINK_HINT_LABEL_CLASS}[data-state="partial"] .shelix-hint-active-char {
+                color: #ff7a00;
+            }
+        }
     `;
 
     (document.head || document.documentElement).appendChild(styleElement);

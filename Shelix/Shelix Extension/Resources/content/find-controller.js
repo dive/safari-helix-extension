@@ -78,6 +78,80 @@ function ensureFindUiStyle() {
             opacity: 0.5;
         }
 
+        @scope (#${FIND_UI_CONTAINER_ID}) {
+            :scope {
+                position: fixed;
+                inset: unset;
+                top: 12px;
+                right: 12px;
+                z-index: 2147483647;
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                padding: 6px;
+                border: 1px solid GrayText;
+                border-radius: 8px;
+                background: Canvas;
+                color: CanvasText;
+                font: menu;
+                line-height: 1.2;
+                color-scheme: light dark;
+                box-shadow: 0 3px 12px rgba(0, 0, 0, 0.18);
+                max-width: calc(100vw - 24px);
+                margin: 0;
+            }
+
+            :scope[hidden] {
+                display: none !important;
+            }
+
+            * {
+                box-sizing: border-box;
+                font: inherit;
+            }
+
+            #${FIND_UI_INPUT_ID} {
+                min-width: 18em;
+                max-width: min(40em, 50vw);
+                padding: 4px 6px;
+                border: 1px solid GrayText;
+                border-radius: 6px;
+                background: Field;
+                color: FieldText;
+                font: inherit;
+            }
+
+            #${FIND_UI_INPUT_ID}::placeholder {
+                color: GrayText;
+                opacity: 1;
+            }
+
+            #${FIND_UI_STATUS_ID} {
+                min-width: 9ch;
+                text-align: right;
+                white-space: nowrap;
+                color: GrayText;
+            }
+
+            #${FIND_UI_STATUS_ID}[data-state="error"] {
+                color: LinkText;
+            }
+
+            button {
+                min-width: 2.2em;
+                padding: 3px 7px;
+                border: 1px solid GrayText;
+                border-radius: 6px;
+                background: ButtonFace;
+                color: ButtonText;
+                line-height: 1.1;
+            }
+
+            button:disabled {
+                opacity: 0.5;
+            }
+        }
+
         ::highlight(${FIND_HIGHLIGHT_MATCH_NAME}) {
             background: Mark;
             color: MarkText;

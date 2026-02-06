@@ -3,7 +3,7 @@
 }
 
 body {
-    width: 220px;
+    width: 320px;
     margin: 0;
     padding: 12px;
 
@@ -23,6 +23,45 @@ h1 {
 p {
     margin: 0;
     font-size: 12px;
+}
+
+.toggle-row {
+    margin-top: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    font-size: 13px;
+}
+
+.shortcut-section {
+    display: grid;
+    gap: 6px;
+    margin-top: 6px;
+    padding-top: 8px;
+    border-top: 1px solid color-mix(in srgb, currentColor 15%, transparent);
+}
+
+.shortcut-section h2 {
+    margin: 0;
+    font-size: 13px;
+}
+
+.shortcut-value {
+    font-size: 12px;
+    padding: 4px 6px;
+    border: 1px solid color-mix(in srgb, currentColor 25%, transparent);
+    border-radius: 6px;
+}
+
+.shortcut-section button {
+    font-size: 12px;
+    padding: 4px 8px;
+}
+
+.hint {
+    font-size: 11px;
+    line-height: 1.3;
 }
 
 @media (prefers-color-scheme: dark) {

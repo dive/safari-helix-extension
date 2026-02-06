@@ -1,6 +1,136 @@
+function normalizeShortcutCandidate(candidate) {
+    if (!candidate || typeof candidate !== "object") {
+        return null;
+    }
+
+    if (typeof candidate.key !== "string") {
+        return null;
+    }
+
+    const key = candidate.key.trim().toLowerCase();
+    if (!key) {
+        return null;
+    }
+
+    const normalized = {
+        metaKey: Boolean(candidate.metaKey),
+        ctrlKey: Boolean(candidate.ctrlKey),
+        altKey: Boolean(candidate.altKey),
+        shiftKey: Boolean(candidate.shiftKey),
+        key
+    };
+
+    if (!normalized.metaKey && !normalized.ctrlKey && !normalized.altKey) {
+        return null;
+    }
+
+    return normalized;
+}
+
+function applyIncomingSettings(settings) {
+    if (!settings || typeof settings !== "object") {
+        return;
+    }
+
+    if (typeof settings.enabled === "boolean") {
+        state.extensionEnabled = settings.enabled;
+    }
+
+    const normalizedShortcut = normalizeShortcutCandidate(settings.toggleShortcut);
+    if (normalizedShortcut) {
+        state.toggleShortcut = normalizedShortcut;
+    }
+}
+
+function matchesToggleShortcut(event) {
+    const shortcut = normalizeShortcutCandidate(state.toggleShortcut) || DEFAULT_TOGGLE_SHORTCUT;
+    const key = normalizeKey(event);
+
+    return key === shortcut.key
+        && event.metaKey === shortcut.metaKey
+        && event.ctrlKey === shortcut.ctrlKey
+        && event.altKey === shortcut.altKey
+        && event.shiftKey === shortcut.shiftKey;
+}
+
+function resetShelixInteractiveState() {
+    clearScrollKeys();
+    clearPendingPrefix();
+    hideKeyHintPopup();
+    hideLinkHints();
+    closeFindUi();
+    clearFindResults();
+    updateFindUiState("");
+
+    if (state.mode === "insert") {
+        exitInsertMode();
+    }
+
+    setMode("normal");
+    runAction(ACTION.INPUT_CLEAR_HIGHLIGHT);
+}
+
+function requestToggleEnabledState() {
+    browser.runtime.sendMessage({
+        type: SETTINGS_MESSAGE_TYPE.TOGGLE_ENABLED
+    }).then((response) => {
+        if (!response?.ok || !response.settings) {
+            return;
+        }
+
+        applyIncomingSettings(response.settings);
+        if (!state.extensionEnabled) {
+            resetShelixInteractiveState();
+        }
+    }).catch(() => {
+        // The extension may be reloading.
+    });
+}
+
+function handleIncomingSettingsMessage(message) {
+    if (message?.type !== SETTINGS_MESSAGE_TYPE.UPDATED || !message.settings) {
+        return;
+    }
+
+    applyIncomingSettings(message.settings);
+    if (!state.extensionEnabled) {
+        resetShelixInteractiveState();
+    }
+}
+
+function syncSettingsFromBackground() {
+    browser.runtime.sendMessage({
+        type: SETTINGS_MESSAGE_TYPE.GET
+    }).then((response) => {
+        if (!response?.ok || !response.settings) {
+            return;
+        }
+
+        applyIncomingSettings(response.settings);
+        if (!state.extensionEnabled) {
+            resetShelixInteractiveState();
+        }
+    }).catch(() => {
+        // The extension may be reloading.
+    });
+}
+
 function initializeShelixEventHandlers() {
+    browser.runtime.onMessage.addListener(handleIncomingSettingsMessage);
+    syncSettingsFromBackground();
+
     document.addEventListener("keydown", (event) => {
-        if (event.defaultPrevented || event.isComposing) {
+        if (event.isComposing) {
+            return;
+        }
+
+        if (matchesToggleShortcut(event)) {
+            event.preventDefault();
+            requestToggleEnabledState();
+            return;
+        }
+
+        if (!state.extensionEnabled || event.defaultPrevented) {
             return;
         }
 
@@ -111,6 +241,10 @@ function initializeShelixEventHandlers() {
     });
 
     document.addEventListener("keyup", (event) => {
+        if (!state.extensionEnabled) {
+            return;
+        }
+
         if (isTargetInsideFindUi(event.target)) {
             return;
         }

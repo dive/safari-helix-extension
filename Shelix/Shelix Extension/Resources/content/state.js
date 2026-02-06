@@ -1,4 +1,6 @@
 const state = {
+    extensionEnabled: true,
+    toggleShortcut: { ...DEFAULT_TOGGLE_SHORTCUT },
     scrollAnimationFrame: null,
     lastScrollFrameTime: 0,
     isJPressed: false,

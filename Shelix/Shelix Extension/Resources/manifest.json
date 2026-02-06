@@ -44,5 +44,14 @@
         "default_icon": "images/toolbar-icon.svg"
     },
 
-    "permissions": [ "tabs" ]
+    "commands": {
+        "toggle-enabled": {
+            "suggested_key": {
+                "mac": "Ctrl+Command+H"
+            },
+            "description": "Toggle Shelix enabled state"
+        }
+    },
+
+    "permissions": [ "tabs", "storage" ]
 }

@@ -4,6 +4,20 @@
     }
 
     const TAB_ACTION_MESSAGE_TYPE = "shelix.tabAction";
+    const SETTINGS_MESSAGE_TYPE = Object.freeze({
+        GET: "shelix.settings.get",
+        TOGGLE_ENABLED: "shelix.settings.toggleEnabled",
+        SET_ENABLED: "shelix.settings.setEnabled",
+        SET_TOGGLE_SHORTCUT: "shelix.settings.setToggleShortcut",
+        UPDATED: "shelix.settings.updated"
+    });
+    const DEFAULT_TOGGLE_SHORTCUT = Object.freeze({
+        metaKey: true,
+        ctrlKey: true,
+        altKey: false,
+        shiftKey: false,
+        key: "h"
+    });
     const TAB_ACTION = Object.freeze({
         NEXT: "next",
         PREVIOUS: "previous",
@@ -119,6 +133,8 @@
 
     globalThis.ShelixShared = Object.freeze({
         TAB_ACTION_MESSAGE_TYPE,
+        SETTINGS_MESSAGE_TYPE,
+        DEFAULT_TOGGLE_SHORTCUT,
         TAB_ACTION,
         ACTION,
         NORMAL_MODE_ACTIONS,

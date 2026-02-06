@@ -9,6 +9,17 @@
     <main>
         <h1 id="title">Shelix</h1>
         <p>Helix keybindings for Safari.</p>
+        <label class="toggle-row" for="enabled-toggle">
+            <span>Extension enabled</span>
+            <input id="enabled-toggle" type="checkbox">
+        </label>
+        <section class="shortcut-section" aria-labelledby="shortcut-title">
+            <h2 id="shortcut-title">Toggle Shortcut</h2>
+            <p id="shortcut-value" class="shortcut-value">Command + Control + H</p>
+            <button id="record-shortcut" type="button">Record Shortcut</button>
+            <button id="reset-shortcut" type="button">Reset to Default</button>
+            <p class="hint">Use Command/Control/Option modifiers. Change Safari command shortcuts in Safari Settings > Extensions > Keyboard Shortcuts.</p>
+        </section>
     </main>
 </body>
 </html>

@@ -50,6 +50,7 @@ Shelix is a Safari extension that brings Helix keybindings to the browser for ke
 - `Space n`: open a new tab
 - `Space q`: close the current tab
 - `Space d`: duplicate the current tab
+- `Command` + `Ctrl` + `h`: toggle Shelix enabled/disabled
 
 Notes:
 - In Normal mode, `h`/`l` only changes highlight and does not activate editing.
@@ -61,13 +62,16 @@ Notes:
 - On engines without CSS Highlights support, Find still navigates matches but visual match highlighting may be limited.
 - In the Find bar, `Enter`/`Shift+Enter` move next/previous and `Escape` closes it.
 - Tab actions run only in Normal mode.
+- When Shelix is disabled, page key handling is suspended until you toggle it back on.
 - Prefix keys (`Space`, `g`) show a bottom-right key-hint popup with available follow-up actions.
 - Input-field selection includes text inputs, textareas, and contenteditable elements.
 - `f` in Helix is "find next char"; here it is repurposed for browser-specific link hint navigation (similar to Vimium's `f`).
+- You can change the toggle shortcut from the extension popup (`Record Shortcut`) or from Safari keyboard shortcut settings.
 
 ## Permissions
 Shelix is designed to request only what it needs for keyboard-first browsing.
 - `tabs`: required for next/previous tab navigation, new tab, close tab, and duplicate tab actions.
+- `storage`: required to persist enabled/disabled state and user-configured toggle shortcut.
 
 ## Troubleshooting
 - If you do not see the extension, restart Safari and check `Safari Settings > Extensions`.

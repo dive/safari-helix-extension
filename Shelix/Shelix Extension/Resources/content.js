@@ -273,7 +273,25 @@ document.addEventListener("keydown", (event) => {
         return;
     }
 
-    if ((key === "enter" || key === "o") && mode === "normal") {
+    if (key === "escape" && mode === "normal") {
+        event.preventDefault();
+        setHighlightedField(null);
+        return;
+    }
+
+    if (key === "i" && mode === "normal") {
+        const fields = getNavigableFields();
+        const field = getHighlightedField(fields) || fields[0] || null;
+        if (!field) {
+            return;
+        }
+
+        event.preventDefault();
+        enterInsertMode(field);
+        return;
+    }
+
+    if (key === "enter" && mode === "normal") {
         const field = ensureHighlightedField();
         if (!field) {
             return;

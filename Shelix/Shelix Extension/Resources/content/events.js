@@ -24,6 +24,16 @@ function initializeShelixEventHandlers() {
             return;
         }
 
+        if (isLinkHintModeActive()) {
+            event.preventDefault();
+            if (key === "escape") {
+                hideLinkHints();
+            } else if (key.length === 1 && !event.ctrlKey && !event.metaKey && !event.altKey) {
+                handleLinkHintInput(key);
+            }
+            return;
+        }
+
         if (event.ctrlKey) {
             if (state.mode !== "normal" || isEditableTarget(event.target)) {
                 return;
@@ -124,12 +134,18 @@ function initializeShelixEventHandlers() {
     window.addEventListener("blur", () => {
         clearScrollKeys();
         clearPendingPrefix();
+        if (isLinkHintModeActive()) {
+            hideLinkHints();
+        }
     });
 
     document.addEventListener("visibilitychange", () => {
         if (document.visibilityState !== "visible") {
             clearScrollKeys();
             clearPendingPrefix();
+            if (isLinkHintModeActive()) {
+                hideLinkHints();
+            }
         }
     });
 

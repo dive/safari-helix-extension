@@ -11,7 +11,7 @@ function isTargetInsideShelixUi(target) {
         return false;
     }
 
-    return Boolean(target.closest(`#${FIND_UI_CONTAINER_ID}, #${KEY_HINT_CONTAINER_ID}`));
+    return Boolean(target.closest(`#${FIND_UI_CONTAINER_ID}, #${KEY_HINT_CONTAINER_ID}, #${LINK_HINT_OVERLAY_ID}`));
 }
 
 function getInputSelectionSnapshot(input) {

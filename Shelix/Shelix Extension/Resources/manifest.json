@@ -30,6 +30,7 @@
             "scroll-controller.js",
             "input-controller.js",
             "find-controller.js",
+            "link-hint-controller.js",
             "action-dispatch.js",
             "events.js",
             "content.js"

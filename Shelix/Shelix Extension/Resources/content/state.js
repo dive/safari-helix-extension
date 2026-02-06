@@ -16,6 +16,9 @@ const state = {
     findMatchHighlight: null,
     findActiveHighlight: null,
     keyHintMode: "hidden",
+    linkHints: [],
+    linkHintMode: "hidden",
+    linkHintInput: "",
     pendingFindUiSearchFrame: null,
     pendingFindUiSearchRequest: null,
     pendingFindUiDebounceTimer: null

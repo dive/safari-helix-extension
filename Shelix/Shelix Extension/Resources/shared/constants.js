@@ -37,6 +37,7 @@
         TAB_NEW: "tab.new",
         TAB_CLOSE: "tab.close",
         TAB_DUPLICATE: "tab.duplicate",
+        LINK_HINT_SHOW: "linkHint.show",
         PREFIX_G: "prefix.g",
         PREFIX_SPACE: "prefix.space"
     });
@@ -52,6 +53,7 @@
         l: ACTION.INPUT_NEXT,
         enter: ACTION.INPUT_INSERT_HIGHLIGHTED,
         i: ACTION.INPUT_INSERT_FIRST,
+        f: ACTION.LINK_HINT_SHOW,
         g: ACTION.PREFIX_G,
         " ": ACTION.PREFIX_SPACE
     });
@@ -93,7 +95,8 @@
         [ACTION.TAB_PREVIOUS]: "Previous tab",
         [ACTION.TAB_NEW]: "New tab",
         [ACTION.TAB_CLOSE]: "Close tab",
-        [ACTION.TAB_DUPLICATE]: "Duplicate tab"
+        [ACTION.TAB_DUPLICATE]: "Duplicate tab",
+        [ACTION.LINK_HINT_SHOW]: "Link hints"
     });
 
     const HELP_KEY_HINT_ROWS = Object.freeze([
@@ -101,6 +104,7 @@
         Object.freeze({ key: "Ctrl-d / Ctrl-u", label: "Half page down / up" }),
         Object.freeze({ key: "Ctrl-f / Ctrl-b", label: "Page down / up" }),
         Object.freeze({ key: "Ctrl-o / Ctrl-i", label: "History back / forward" }),
+        Object.freeze({ key: "f", label: "Link hints (click links/buttons)" }),
         Object.freeze({ key: "g g / g e", label: "Top / bottom of page" }),
         Object.freeze({ key: "/, n, N", label: "Find in page and jump matches" }),
         Object.freeze({ key: "h / l", label: "Previous / next input field" }),

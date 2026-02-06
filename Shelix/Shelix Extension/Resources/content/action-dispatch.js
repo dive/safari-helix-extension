@@ -82,6 +82,9 @@ const ACTION_HANDLERS = Object.freeze({
     [ACTION.HISTORY_FORWARD]: () => {
         history.forward();
     },
+    [ACTION.LINK_HINT_SHOW]: () => {
+        showLinkHints();
+    },
     [ACTION.FIND_OPEN]: () => {
         clearScrollKeys();
         openFindUi();

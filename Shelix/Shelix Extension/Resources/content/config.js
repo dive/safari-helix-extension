@@ -47,3 +47,6 @@ const FIND_HIGHLIGHT_ACTIVE_NAME = "shelix-find-active";
 const FIND_MATCH_LIMIT = 2000;
 const FIND_DEBOUNCE_MS = 80;
 const FIND_EXCLUDED_SEARCH_ANCESTOR_SELECTOR = "script, style, noscript, textarea, option";
+const LINK_HINT_STYLE_ID = "shelix-link-hint-style";
+const LINK_HINT_OVERLAY_ID = "shelix-link-hints";
+const LINK_HINT_LABEL_CLASS = "shelix-link-hint-label";

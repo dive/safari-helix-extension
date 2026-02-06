@@ -292,14 +292,13 @@ function flushPendingFindRequest() {
 }
 
 function scheduleFindFromUi(query, backwards, startFromBoundary, selectionSnapshot) {
-    state.pendingFindUiSearchRequest = {
-        query,
-        backwards,
-        startFromBoundary,
-        selectionSnapshot
-    };
-
     cancelPendingFindSchedule();
+
+    const normalizedQuery = getNormalizedFindQuery(query);
+    if (normalizedQuery !== state.activeFindQuery) {
+        clearFindResults();
+        updateFindUiState(normalizedQuery);
+    }
 
     state.pendingFindUiSearchRequest = {
         query,

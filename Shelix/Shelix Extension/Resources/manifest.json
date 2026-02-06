@@ -47,7 +47,7 @@
     "commands": {
         "toggle-enabled": {
             "suggested_key": {
-                "mac": "Ctrl+Command+H"
+                "mac": "MacCtrl+Command+H"
             },
             "description": "Toggle Shelix enabled state"
         }

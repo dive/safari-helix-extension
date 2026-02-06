@@ -26,11 +26,11 @@ Shelix is a Safari extension that brings Helix keybindings to the browser for ke
 - `h` / `l`: move highlighted input selection to previous/next input field
 - `Enter` or `i`: enter Insert mode and focus the highlighted input field
 - `Escape`: leave Insert mode and return to Normal mode
-- `g t`: switch to next tab
-- `g T`: switch to previous tab
-- `g n`: open a new tab
-- `g c`: close the current tab
-- `g d`: duplicate the current tab
+- `g n`: switch to next tab
+- `g p`: switch to previous tab
+- `Space n`: open a new tab
+- `Space q`: close the current tab
+- `Space d`: duplicate the current tab
 
 Notes:
 - In Normal mode, `h`/`l` only changes highlight and does not activate editing.

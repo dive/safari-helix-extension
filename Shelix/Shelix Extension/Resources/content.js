@@ -26,7 +26,7 @@ const TAB_ACTION = Object.freeze({
     CLOSE: "close",
     DUPLICATE: "duplicate"
 });
-const G_SEQUENCE_TIMEOUT_MS = 1000;
+const PREFIX_SEQUENCE_TIMEOUT_MS = 1000;
 
 let scrollAnimationFrame = null;
 let lastScrollFrameTime = 0;
@@ -36,6 +36,8 @@ let highlightedField = null;
 let mode = "normal";
 let hasPendingGSequence = false;
 let pendingGTimeout = null;
+let hasPendingSpaceSequence = false;
+let pendingSpaceTimeout = null;
 
 function ensureHighlightStyle() {
     if (document.getElementById(INPUT_HIGHLIGHT_STYLE_ID)) {
@@ -118,6 +120,7 @@ function setMode(nextMode) {
     mode = nextMode;
     if (mode !== "normal") {
         clearPendingGSequence();
+        clearPendingSpaceSequence();
     }
     syncHighlightVisibility();
 }
@@ -280,7 +283,7 @@ function armPendingGSequence() {
     hasPendingGSequence = true;
     pendingGTimeout = window.setTimeout(() => {
         clearPendingGSequence();
-    }, G_SEQUENCE_TIMEOUT_MS);
+    }, PREFIX_SEQUENCE_TIMEOUT_MS);
 }
 
 function requestTabAction(action) {
@@ -310,11 +313,54 @@ function handleGSequence(event, key) {
     clearPendingGSequence();
 
     let action = null;
-    if (key === "t") {
-        action = event.shiftKey ? TAB_ACTION.PREVIOUS : TAB_ACTION.NEXT;
-    } else if (key === "n") {
+    if (key === "n") {
+        action = TAB_ACTION.NEXT;
+    } else if (key === "p") {
+        action = TAB_ACTION.PREVIOUS;
+    }
+
+    if (!action) {
+        return false;
+    }
+
+    event.preventDefault();
+    requestTabAction(action);
+    return true;
+}
+
+function clearPendingSpaceSequence() {
+    hasPendingSpaceSequence = false;
+    if (pendingSpaceTimeout !== null) {
+        window.clearTimeout(pendingSpaceTimeout);
+        pendingSpaceTimeout = null;
+    }
+}
+
+function armPendingSpaceSequence() {
+    clearPendingSpaceSequence();
+    hasPendingSpaceSequence = true;
+    pendingSpaceTimeout = window.setTimeout(() => {
+        clearPendingSpaceSequence();
+    }, PREFIX_SEQUENCE_TIMEOUT_MS);
+}
+
+function handleSpaceSequence(event, key) {
+    if (!hasPendingSpaceSequence) {
+        return false;
+    }
+
+    if (key === " ") {
+        event.preventDefault();
+        armPendingSpaceSequence();
+        return true;
+    }
+
+    clearPendingSpaceSequence();
+
+    let action = null;
+    if (key === "n") {
         action = TAB_ACTION.NEW;
-    } else if (key === "c") {
+    } else if (key === "q") {
         action = TAB_ACTION.CLOSE;
     } else if (key === "d") {
         action = TAB_ACTION.DUPLICATE;
@@ -344,6 +390,9 @@ document.addEventListener("keydown", (event) => {
 
     const key = event.key.toLowerCase();
     if (handleGSequence(event, key)) {
+        return;
+    }
+    if (handleSpaceSequence(event, key)) {
         return;
     }
 
@@ -389,6 +438,12 @@ document.addEventListener("keydown", (event) => {
     if (key === "g" && mode === "normal") {
         event.preventDefault();
         armPendingGSequence();
+        return;
+    }
+
+    if (key === " " && mode === "normal") {
+        event.preventDefault();
+        armPendingSpaceSequence();
         return;
     }
 
@@ -448,9 +503,11 @@ document.addEventListener("visibilitychange", () => {
     }
 });
 window.addEventListener("blur", clearPendingGSequence);
+window.addEventListener("blur", clearPendingSpaceSequence);
 document.addEventListener("visibilitychange", () => {
     if (document.visibilityState !== "visible") {
         clearPendingGSequence();
+        clearPendingSpaceSequence();
     }
 });
 

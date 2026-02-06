@@ -321,15 +321,29 @@ function canUseCustomFindHighlights() {
         && typeof Highlight === "function";
 }
 
-function clearCustomFindHighlights() {
+function ensureFindHighlightObjects() {
+    if (state.findMatchHighlight && state.findActiveHighlight) {
+        return;
+    }
+
     if (!canUseCustomFindHighlights()) {
         return;
     }
 
-    // Safari can defer repaint when deleting highlight entries during key handlers.
-    // Replacing with empty highlights clears visuals immediately.
-    CSS.highlights.set(FIND_HIGHLIGHT_MATCH_NAME, new Highlight());
-    CSS.highlights.set(FIND_HIGHLIGHT_ACTIVE_NAME, new Highlight());
+    state.findMatchHighlight = new Highlight();
+    state.findActiveHighlight = new Highlight();
+    CSS.highlights.set(FIND_HIGHLIGHT_MATCH_NAME, state.findMatchHighlight);
+    CSS.highlights.set(FIND_HIGHLIGHT_ACTIVE_NAME, state.findActiveHighlight);
+}
+
+function clearCustomFindHighlights() {
+    if (state.findMatchHighlight) {
+        state.findMatchHighlight.clear();
+    }
+
+    if (state.findActiveHighlight) {
+        state.findActiveHighlight.clear();
+    }
 }
 
 function clearFindResults() {
@@ -340,7 +354,6 @@ function clearFindResults() {
     state.activeFindQuery = "";
     state.didTruncateFindMatches = false;
     state.findUsesCustomHighlights = false;
-    state.findAllMatchesHighlight = null;
 }
 
 function shouldIncludeTextNodeForFind(node) {
@@ -430,13 +443,14 @@ function collectFindMatchEntries(query) {
 }
 
 function buildFindMatchesWithCustomHighlights(entries) {
-    const allMatchesHighlight = new Highlight();
+    ensureFindHighlightObjects();
+    state.findMatchHighlight.clear();
 
     state.findMatches = entries.map((entry) => {
         const range = document.createRange();
         range.setStart(entry.node, entry.start);
         range.setEnd(entry.node, entry.end);
-        allMatchesHighlight.add(range);
+        state.findMatchHighlight.add(range);
 
         return {
             range,
@@ -444,7 +458,6 @@ function buildFindMatchesWithCustomHighlights(entries) {
         };
     });
 
-    state.findAllMatchesHighlight = allMatchesHighlight;
     state.findUsesCustomHighlights = true;
 }
 
@@ -471,7 +484,6 @@ function rebuildFindResults(query) {
     state.activeFindQuery = query;
     state.didTruncateFindMatches = false;
     state.findUsesCustomHighlights = false;
-    state.findAllMatchesHighlight = null;
 
     const { entries, didTruncate } = collectFindMatchEntries(query);
     state.didTruncateFindMatches = didTruncate;
@@ -522,18 +534,14 @@ function updateRenderedFindHighlights() {
         return false;
     }
 
-    if (state.findUsesCustomHighlights && canUseCustomFindHighlights()) {
-        if (state.findAllMatchesHighlight) {
-            CSS.highlights.set(FIND_HIGHLIGHT_MATCH_NAME, state.findAllMatchesHighlight);
-        }
+    if (state.findUsesCustomHighlights && state.findActiveHighlight) {
+        state.findActiveHighlight.clear();
 
-        const activeMatchHighlight = new Highlight();
         const activeMatch = getActiveFindMatch();
         if (activeMatch && activeMatch.range instanceof Range) {
-            activeMatchHighlight.add(activeMatch.range);
+            state.findActiveHighlight.add(activeMatch.range);
         }
 
-        CSS.highlights.set(FIND_HIGHLIGHT_ACTIVE_NAME, activeMatchHighlight);
         return true;
     }
 

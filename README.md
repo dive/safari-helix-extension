@@ -23,7 +23,7 @@ Shelix is a Safari extension that brings Helix keybindings to the browser for ke
 
 ## Keybindings
 - `j` / `k`: smooth continuous scrolling down/up while held
-- `/`: open Find in page
+- `/`: open the Find bar
 - `n` / `N`: jump to next/previous Find match
 - `h` / `l`: move highlighted input selection to previous/next input field
 - `Enter` or `i`: enter Insert mode and focus the highlighted input field
@@ -41,6 +41,7 @@ Notes:
 - Pressing `Escape` in Normal mode clears the current input highlight.
 - `/` starts Find from the page boundary and highlights the first visible match.
 - `n`/`N` continue through visible matches only (hidden/non-rendered matches are skipped).
+- In the Find bar, `Enter`/`Shift+Enter` move next/previous and `Escape` closes it.
 - Tab actions run only in Normal mode.
 - Prefix keys (`Space`, `g`) show a bottom-right key-hint popup with available follow-up actions.
 - Input-field selection includes text inputs, textareas, and contenteditable elements.

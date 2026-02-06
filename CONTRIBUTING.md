@@ -29,9 +29,10 @@ Thanks for helping improve Shelix.
 ## Find Command Behavior
 
 When changing find-related code, preserve these rules:
-- `/` opens the Find prompt and starts search from the page boundary.
+- `/` opens the Find bar and starts search from the page boundary.
 - The first **visible** match should be highlighted.
 - `n` / `N` move to next/previous **visible** matches.
+- In the Find bar, `Enter` / `Shift+Enter` navigate next/previous and `Escape` closes the bar.
 - Hidden or non-rendered matches (for example `display: none`, `visibility: hidden`, collapsed/zero-rect content) must be skipped.
 
 ## Testing

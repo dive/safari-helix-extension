@@ -24,9 +24,7 @@ const INPUT_FIELD_SELECTOR = [
     "input[type='tel']",
     "input[type='number']",
     "textarea",
-    "[contenteditable='']",
-    "[contenteditable='true']",
-    "[contenteditable='plaintext-only']"
+    "[contenteditable]:not([contenteditable='false'])"
 ].join(",");
 
 const SCROLL_PIXELS_PER_SECOND = 1200;

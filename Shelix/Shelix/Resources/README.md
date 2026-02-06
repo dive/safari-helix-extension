@@ -24,12 +24,15 @@ Shelix is a Safari extension that brings Helix keybindings to the browser: fast,
 - Toggle or configure the extension from Safari Settings/Preferences > Extensions.
 - Site access can be adjusted from the extension details screen in Safari.
 
-## Keybindings (overview)
-Shelix follows familiar Helix/Vim‑style motions for navigation. A few examples (exact mappings may evolve):
-- hjkl to move focus and scroll
-- w/b to jump by words, gg/G to go to page top/bottom
-- f/t + character to jump to the next occurrence on a line
-- Commands for tab switching and history navigation
+## Keybindings (current base)
+- `j`: scroll down
+- `k`: scroll up
+- `h`: jump focus to the previous input field
+- `l`: jump focus to the next input field
+
+Notes:
+- Keybindings run only when you are not currently typing in an editable field.
+- Input field jumps include text inputs, textareas, and contenteditable elements.
 
 ## Permissions
 Shelix requests only the permissions it needs to provide keyboard‑first browsing:

@@ -2,6 +2,10 @@
 
 Shelix is a Safari extension that brings Helix keybindings to the browser for keyboard-first navigation, scrolling, tab control, and history actions.
 
+## Keybindings (Base)
+- `j` / `k`: smooth continuous scrolling down/up while held
+- `h` / `l`: jump focus to previous/next input field
+
 ## Project Structure
 - `Shelix/Shelix`: macOS host app used to install and manage the Safari extension.
 - `Shelix/Shelix Extension`: Safari Web Extension bundle (manifest, scripts, popup, locales).

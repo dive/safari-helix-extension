@@ -40,6 +40,7 @@ const ACTION = Object.freeze({
     FIND_OPEN: "find.open",
     FIND_NEXT: "find.next",
     FIND_PREVIOUS: "find.previous",
+    HELP_SHOW: "help.show",
     INPUT_PREVIOUS: "input.previous",
     INPUT_NEXT: "input.next",
     INPUT_INSERT_HIGHLIGHTED: "input.insert.highlighted",
@@ -60,6 +61,7 @@ const NORMAL_MODE_ACTIONS = Object.freeze({
     "/": ACTION.FIND_OPEN,
     n: ACTION.FIND_NEXT,
     "shift+n": ACTION.FIND_PREVIOUS,
+    "?": ACTION.HELP_SHOW,
     h: ACTION.INPUT_PREVIOUS,
     l: ACTION.INPUT_NEXT,
     enter: ACTION.INPUT_INSERT_HIGHLIGHTED,
@@ -78,7 +80,8 @@ const PREFIX_ACTIONS = Object.freeze({
     " ": Object.freeze({
         n: ACTION.TAB_NEW,
         q: ACTION.TAB_CLOSE,
-        d: ACTION.TAB_DUPLICATE
+        d: ACTION.TAB_DUPLICATE,
+        "?": ACTION.HELP_SHOW
     })
 });
 
@@ -95,12 +98,28 @@ const ACTION_LABELS = Object.freeze({
     [ACTION.FIND_OPEN]: "Find in page",
     [ACTION.FIND_NEXT]: "Find next match",
     [ACTION.FIND_PREVIOUS]: "Find previous match",
+    [ACTION.HELP_SHOW]: "Show keymap",
     [ACTION.TAB_NEXT]: "Next tab",
     [ACTION.TAB_PREVIOUS]: "Previous tab",
     [ACTION.TAB_NEW]: "New tab",
     [ACTION.TAB_CLOSE]: "Close tab",
     [ACTION.TAB_DUPLICATE]: "Duplicate tab"
 });
+
+const HELP_KEY_HINT_ROWS = Object.freeze([
+    Object.freeze({ key: "j / k", label: "Scroll down / up" }),
+    Object.freeze({ key: "Ctrl-d / Ctrl-u", label: "Half page down / up" }),
+    Object.freeze({ key: "g g / g e", label: "Top / bottom of page" }),
+    Object.freeze({ key: "/, n, N", label: "Find in page and jump matches" }),
+    Object.freeze({ key: "h / l", label: "Previous / next input field" }),
+    Object.freeze({ key: "Enter / i", label: "Enter Insert mode" }),
+    Object.freeze({ key: "Esc", label: "Exit Insert or clear highlight" }),
+    Object.freeze({ key: "g n / g p", label: "Next / previous tab" }),
+    Object.freeze({ key: "Space n", label: "New tab" }),
+    Object.freeze({ key: "Space q", label: "Close tab" }),
+    Object.freeze({ key: "Space d", label: "Duplicate tab" }),
+    Object.freeze({ key: "? / Space ?", label: "Show keymap" })
+]);
 
 let scrollAnimationFrame = null;
 let lastScrollFrameTime = 0;
@@ -110,6 +129,7 @@ let highlightedField = null;
 let mode = "normal";
 let pendingPrefixKey = null;
 let lastFindQuery = "";
+let keyHintMode = "hidden";
 
 function normalizeKey(event) {
     return event.key.length === 1 ? event.key.toLowerCase() : event.key.toLowerCase();
@@ -250,6 +270,24 @@ function hideKeyHintPopup() {
     if (container) {
         container.hidden = true;
     }
+
+    keyHintMode = "hidden";
+}
+
+function showKeyHintPopup(title, rows) {
+    if (rows.length === 0) {
+        hideKeyHintPopup();
+        return;
+    }
+
+    const container = getKeyHintContainer();
+    container.innerHTML = `<div class="shelix-key-hint-title">${title}</div>${rows.map((row) => `
+        <div class="shelix-key-hint-row">
+            <span class="shelix-key-hint-key">${row.key}</span>
+            <span class="shelix-key-hint-label">${row.label}</span>
+        </div>
+    `).join("")}`;
+    container.hidden = false;
 }
 
 function showPrefixKeyHint(prefixKey) {
@@ -259,22 +297,18 @@ function showPrefixKeyHint(prefixKey) {
         return;
     }
 
-    const rows = Object.entries(prefixMap);
-    if (rows.length === 0) {
-        hideKeyHintPopup();
-        return;
-    }
-
-    const container = getKeyHintContainer();
+    const rows = Object.entries(prefixMap).map(([key, action]) => ({
+        key: formatKeyLabel(key),
+        label: ACTION_LABELS[action] || action
+    }));
     const title = PREFIX_TITLES[prefixKey] || formatKeyLabel(prefixKey);
+    showKeyHintPopup(title, rows);
+    keyHintMode = "prefix";
+}
 
-    container.innerHTML = `<div class="shelix-key-hint-title">${title}</div>${rows.map(([key, action]) => `
-        <div class="shelix-key-hint-row">
-            <span class="shelix-key-hint-key">${formatKeyLabel(key)}</span>
-            <span class="shelix-key-hint-label">${ACTION_LABELS[action] || action}</span>
-        </div>
-    `).join("")}`;
-    container.hidden = false;
+function showHelpKeyHint() {
+    showKeyHintPopup("Keymap", HELP_KEY_HINT_ROWS);
+    keyHintMode = "help";
 }
 
 function getEditableTarget(target) {
@@ -613,6 +647,17 @@ function runAction(action) {
         return;
     }
 
+    if (action === ACTION.HELP_SHOW) {
+        if (keyHintMode === "help") {
+            hideKeyHintPopup();
+            return;
+        }
+
+        clearPendingPrefix();
+        showHelpKeyHint();
+        return;
+    }
+
     if (action === ACTION.INPUT_PREVIOUS) {
         highlightRelativeField(-1);
         return;
@@ -731,6 +776,10 @@ document.addEventListener("keydown", (event) => {
             return;
         }
 
+        if (keyHintMode === "help") {
+            hideKeyHintPopup();
+        }
+
         if (key === "u") {
             event.preventDefault();
             runAction(ACTION.SCROLL_HALF_PAGE_UP);
@@ -746,6 +795,10 @@ document.addEventListener("keydown", (event) => {
         return;
     }
 
+    if (keyHintMode === "help" && key !== "?" && key !== "escape") {
+        hideKeyHintPopup();
+    }
+
     if (key === "escape" && mode === "insert") {
         event.preventDefault();
         exitInsertMode();
@@ -754,6 +807,9 @@ document.addEventListener("keydown", (event) => {
 
     if (key === "escape" && mode === "normal") {
         event.preventDefault();
+        if (keyHintMode === "help") {
+            hideKeyHintPopup();
+        }
         runAction(ACTION.INPUT_CLEAR_HIGHLIGHT);
         return;
     }

@@ -334,6 +334,7 @@ function clearFindResults() {
     state.activeFindQuery = "";
     state.didTruncateFindMatches = false;
     state.findUsesCustomHighlights = false;
+    state.findAllMatchesHighlight = null;
 }
 
 function shouldIncludeTextNodeForFind(node) {
@@ -423,10 +424,13 @@ function collectFindMatchEntries(query) {
 }
 
 function buildFindMatchesWithCustomHighlights(entries) {
+    const allMatchesHighlight = new Highlight();
+
     state.findMatches = entries.map((entry) => {
         const range = document.createRange();
         range.setStart(entry.node, entry.start);
         range.setEnd(entry.node, entry.end);
+        allMatchesHighlight.add(range);
 
         return {
             range,
@@ -434,6 +438,7 @@ function buildFindMatchesWithCustomHighlights(entries) {
         };
     });
 
+    state.findAllMatchesHighlight = allMatchesHighlight;
     state.findUsesCustomHighlights = true;
 }
 
@@ -461,6 +466,7 @@ function rebuildFindResults(query) {
     state.activeFindQuery = query;
     state.didTruncateFindMatches = false;
     state.findUsesCustomHighlights = false;
+    state.findAllMatchesHighlight = null;
 
     const { entries, didTruncate } = collectFindMatchEntries(query);
     state.didTruncateFindMatches = didTruncate;
@@ -491,14 +497,9 @@ function updateRenderedFindHighlights() {
     }
 
     if (state.findUsesCustomHighlights && canUseCustomFindHighlights()) {
-        const allMatchesHighlight = new Highlight();
-        for (const match of state.findMatches) {
-            if (match.range instanceof Range) {
-                allMatchesHighlight.add(match.range);
-            }
+        if (state.findAllMatchesHighlight) {
+            CSS.highlights.set(FIND_HIGHLIGHT_MATCH_NAME, state.findAllMatchesHighlight);
         }
-
-        CSS.highlights.set(FIND_HIGHLIGHT_MATCH_NAME, allMatchesHighlight);
 
         const activeMatchHighlight = new Highlight();
         const activeMatch = getActiveFindMatch();

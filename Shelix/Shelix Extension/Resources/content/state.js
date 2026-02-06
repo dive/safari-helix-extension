@@ -12,6 +12,7 @@ const state = {
     findMatches: [],
     didTruncateFindMatches: false,
     findUsesCustomHighlights: false,
+    findAllMatchesHighlight: null,
     keyHintMode: "hidden",
     pendingFindUiSearchFrame: null,
     pendingFindUiSearchRequest: null

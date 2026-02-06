@@ -24,7 +24,7 @@ function ensureLinkHintStyle() {
             border: 1px solid GrayText;
             border-radius: 3px;
             background: Canvas;
-            color: CanvasText;
+            color: GrayText;
             font: menu;
             font-weight: 600;
             line-height: 1.2;
@@ -34,8 +34,16 @@ function ensureLinkHintStyle() {
             pointer-events: none;
         }
 
+        .${LINK_HINT_LABEL_CLASS} .shelix-hint-active-char {
+            color: CanvasText;
+        }
+
         .${LINK_HINT_LABEL_CLASS}[data-state="partial"] {
-            color: Highlight;
+            border-color: #ff7a00;
+        }
+
+        .${LINK_HINT_LABEL_CLASS}[data-state="partial"] .shelix-hint-active-char {
+            color: #ff7a00;
         }
     `;
 
@@ -114,6 +122,23 @@ function getHintableElements() {
     });
 }
 
+function renderLabelContent(labelElement, label, matchedCount) {
+    labelElement.textContent = "";
+    if (matchedCount > 0) {
+        const matched = document.createElement("span");
+        matched.textContent = label.slice(0, matchedCount);
+        labelElement.appendChild(matched);
+    }
+    const activeChar = document.createElement("span");
+    activeChar.className = "shelix-hint-active-char";
+    activeChar.textContent = label.charAt(matchedCount);
+    labelElement.appendChild(activeChar);
+    const rest = label.slice(matchedCount + 1);
+    if (rest) {
+        labelElement.appendChild(document.createTextNode(rest));
+    }
+}
+
 function showLinkHints() {
     hideLinkHints();
 
@@ -137,9 +162,9 @@ function showLinkHints() {
 
         const labelElement = document.createElement("span");
         labelElement.className = LINK_HINT_LABEL_CLASS;
-        labelElement.textContent = label;
         labelElement.style.left = rect.left + "px";
         labelElement.style.top = rect.top + "px";
+        renderLabelContent(labelElement, label, 0);
 
         overlay.appendChild(labelElement);
         hints.push({ element, label, labelElement });
@@ -171,6 +196,7 @@ function handleLinkHintInput(char) {
     for (const hint of state.linkHints) {
         if (hint.label.startsWith(input)) {
             hint.labelElement.dataset.state = "partial";
+            renderLabelContent(hint.labelElement, hint.label, input.length);
         } else {
             hint.labelElement.hidden = true;
         }

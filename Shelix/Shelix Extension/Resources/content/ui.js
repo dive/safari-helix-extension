@@ -169,6 +169,12 @@ function showPrefixKeyHint(prefixKey) {
         return;
     }
 
+    if (prefixKey === " ") {
+        showKeyHintPopup("Actions", HELP_KEY_HINT_ROWS);
+        state.keyHintMode = "prefix";
+        return;
+    }
+
     const rows = Object.entries(prefixMap).map(([key, action]) => ({
         key: formatKeyLabel(key),
         label: ACTION_LABELS[action] || action

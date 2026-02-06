@@ -18,7 +18,7 @@ function requestTabAction(action) {
     });
 }
 
-const ACTION_HANDLERS = Object.freeze({
+var ACTION_HANDLERS = Object.freeze({
     [ACTION.SCROLL_DOWN_START]: () => {
         state.isJPressed = true;
         ensureScrollingLoop();

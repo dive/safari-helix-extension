@@ -92,9 +92,9 @@ function ensureLinkHintStyle() {
     (document.head || document.documentElement).appendChild(styleElement);
 }
 
-const LINK_HINT_CHARS = ["a", "s", "d", "f", "g", "h", "j", "k", "l"];
+var LINK_HINT_CHARS = ["a", "s", "d", "f", "g", "h", "j", "k", "l"];
 
-const LINK_HINT_CLICKABLE_SELECTOR = [
+var LINK_HINT_CLICKABLE_SELECTOR = [
     "a[href]",
     "button",
     "[role='button']",

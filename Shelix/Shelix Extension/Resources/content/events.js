@@ -131,8 +131,7 @@ function initializeShelixEventHandlers() {
             return;
         }
 
-        setMode("insert");
-        setHighlightedField(editableField);
+        enterInsertMode(editableField);
     }, {
         capture: true
     });

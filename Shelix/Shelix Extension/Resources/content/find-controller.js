@@ -8,6 +8,7 @@ function ensureFindUiStyle() {
     styleElement.textContent = `
         #${FIND_UI_CONTAINER_ID} {
             position: fixed;
+            inset: unset;
             top: 12px;
             right: 12px;
             z-index: 2147483647;
@@ -24,6 +25,7 @@ function ensureFindUiStyle() {
             color-scheme: light dark;
             box-shadow: 0 3px 12px rgba(0, 0, 0, 0.18);
             max-width: calc(100vw - 24px);
+            margin: 0;
         }
 
         #${FIND_UI_CONTAINER_ID}[hidden] {
@@ -102,6 +104,7 @@ function getFindUiElements(createIfMissing = false) {
 
         container = document.createElement("div");
         container.id = FIND_UI_CONTAINER_ID;
+        container.setAttribute("popover", "manual");
         container.hidden = true;
 
         const input = document.createElement("input");
@@ -229,7 +232,7 @@ function openFindUi() {
     }
 
     const wasOpen = !findUi.container.hidden;
-    findUi.container.hidden = false;
+    shelixShowPopover(findUi.container);
 
     if (!wasOpen) {
         findUi.input.value = state.lastFindQuery;
@@ -254,10 +257,11 @@ function closeFindUi() {
 
     cancelPendingFindSchedule();
 
-    findUi.container.hidden = true;
     if (isTargetInsideFindUi(document.activeElement)) {
         findUi.input.blur();
     }
+
+    shelixHidePopover(findUi.container);
 }
 
 function cancelPendingFindSchedule() {

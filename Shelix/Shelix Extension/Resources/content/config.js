@@ -50,3 +50,21 @@ const FIND_EXCLUDED_SEARCH_ANCESTOR_SELECTOR = "script, style, noscript, textare
 const LINK_HINT_STYLE_ID = "shelix-link-hint-style";
 const LINK_HINT_OVERLAY_ID = "shelix-link-hints";
 const LINK_HINT_LABEL_CLASS = "shelix-link-hint-label";
+
+function canUsePopover(el) {
+    return typeof el?.showPopover === "function" && typeof el?.hidePopover === "function";
+}
+
+function shelixShowPopover(el) {
+    el.hidden = false;
+    if (canUsePopover(el)) {
+        try { el.showPopover(); } catch {}
+    }
+}
+
+function shelixHidePopover(el) {
+    if (canUsePopover(el)) {
+        try { el.hidePopover(); } catch {}
+    }
+    el.hidden = true;
+}

@@ -27,6 +27,7 @@ function ensureKeyHintStyle() {
     styleElement.textContent = `
         #${KEY_HINT_CONTAINER_ID} {
             position: fixed;
+            inset: unset;
             right: 18px;
             bottom: 18px;
             z-index: 2147483647;
@@ -47,6 +48,7 @@ function ensureKeyHintStyle() {
             max-height: min(70vh, 620px);
             overflow: auto;
             overscroll-behavior: contain;
+            margin: 0;
         }
 
         #${KEY_HINT_CONTAINER_ID}[hidden] {
@@ -99,6 +101,7 @@ function getKeyHintContainer() {
 
     container = document.createElement("div");
     container.id = KEY_HINT_CONTAINER_ID;
+    container.setAttribute("popover", "manual");
     container.hidden = true;
     document.documentElement.appendChild(container);
 
@@ -108,7 +111,7 @@ function getKeyHintContainer() {
 function hideKeyHintPopup() {
     const container = document.getElementById(KEY_HINT_CONTAINER_ID);
     if (container) {
-        container.hidden = true;
+        shelixHidePopover(container);
     }
 
     state.keyHintMode = "hidden";
@@ -141,9 +144,9 @@ function showKeyHintPopup(title, rows) {
     }
 
     container.replaceChildren(titleElement, rowsElement);
-    container.hidden = false;
     container.style.visibility = "hidden";
     container.style.width = "";
+    shelixShowPopover(container);
 
     const computedStyle = window.getComputedStyle(container);
     const horizontalInsets = parseFloat(computedStyle.paddingLeft)
@@ -159,7 +162,6 @@ function showKeyHintPopup(title, rows) {
 
     container.style.width = `${boundedWidth}px`;
     container.style.visibility = "";
-    container.hidden = false;
 }
 
 function showPrefixKeyHint(prefixKey) {

@@ -60,6 +60,28 @@ const ACTION_HANDLERS = Object.freeze({
             behavior: "auto"
         });
     },
+    [ACTION.SCROLL_PAGE_UP]: () => {
+        clearScrollKeys();
+        window.scrollBy({
+            left: 0,
+            top: -Math.max(1, window.innerHeight),
+            behavior: "auto"
+        });
+    },
+    [ACTION.SCROLL_PAGE_DOWN]: () => {
+        clearScrollKeys();
+        window.scrollBy({
+            left: 0,
+            top: Math.max(1, window.innerHeight),
+            behavior: "auto"
+        });
+    },
+    [ACTION.HISTORY_BACK]: () => {
+        history.back();
+    },
+    [ACTION.HISTORY_FORWARD]: () => {
+        history.forward();
+    },
     [ACTION.FIND_OPEN]: () => {
         clearScrollKeys();
         openFindUi();

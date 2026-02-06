@@ -39,6 +39,18 @@ function initializeShelixEventHandlers() {
             } else if (key === "d") {
                 event.preventDefault();
                 runAction(ACTION.SCROLL_HALF_PAGE_DOWN);
+            } else if (key === "b") {
+                event.preventDefault();
+                runAction(ACTION.SCROLL_PAGE_UP);
+            } else if (key === "f") {
+                event.preventDefault();
+                runAction(ACTION.SCROLL_PAGE_DOWN);
+            } else if (key === "o") {
+                event.preventDefault();
+                runAction(ACTION.HISTORY_BACK);
+            } else if (key === "i") {
+                event.preventDefault();
+                runAction(ACTION.HISTORY_FORWARD);
             }
 
             return;

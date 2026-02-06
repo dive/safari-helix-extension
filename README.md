@@ -37,6 +37,8 @@ Shelix is a Safari extension that brings Helix keybindings to the browser for ke
 
 ## Keybindings
 - `j` / `k`: smooth continuous scrolling down/up while held
+- `Ctrl-f` / `Ctrl-b`: scroll full page down/up
+- `Ctrl-o` / `Ctrl-i`: browser history back/forward
 - `/`: open the Find bar
 - `n` / `N`: jump to next/previous Find match
 - `h` / `l`: move highlighted input selection to previous/next input field
@@ -71,7 +73,8 @@ Shelix is designed to request only what it needs for keyboard-first browsing.
 
 ## Behavior Verification Checklist
 - Verify `j`/`k` starts and stops smooth scrolling on keydown/keyup.
-- Verify `Ctrl-d`/`Ctrl-u`, `g g`, and `g e` navigation in Normal mode.
+- Verify `Ctrl-d`/`Ctrl-u`, `Ctrl-f`/`Ctrl-b`, `g g`, and `g e` navigation in Normal mode.
+- Verify `Ctrl-o`/`Ctrl-i` navigate browser history back/forward.
 - Verify `h`/`l` highlight changes and `Enter`/`i` enters Insert mode.
 - Verify `Escape` exits Insert mode, clears highlight in Normal mode, and closes Find UI.
 - Verify `/` opens Find UI and `n`/`N` navigates visible matches.

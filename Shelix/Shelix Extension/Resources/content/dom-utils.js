@@ -55,7 +55,7 @@ function isNavigableField(field) {
     }
 
     const style = window.getComputedStyle(field);
-    if (style.display === "none" || style.visibility === "hidden") {
+    if (style.display === "none" || style.visibility === "hidden" || style.visibility === "collapse") {
         return false;
     }
 

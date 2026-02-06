@@ -46,35 +46,19 @@ const ACTION_HANDLERS = Object.freeze({
     },
     [ACTION.SCROLL_HALF_PAGE_UP]: () => {
         clearScrollKeys();
-        window.scrollBy({
-            left: 0,
-            top: -Math.max(1, window.innerHeight / 2),
-            behavior: "auto"
-        });
+        runDiscreteScroll(-Math.max(1, window.innerHeight / 2));
     },
     [ACTION.SCROLL_HALF_PAGE_DOWN]: () => {
         clearScrollKeys();
-        window.scrollBy({
-            left: 0,
-            top: Math.max(1, window.innerHeight / 2),
-            behavior: "auto"
-        });
+        runDiscreteScroll(Math.max(1, window.innerHeight / 2));
     },
     [ACTION.SCROLL_PAGE_UP]: () => {
         clearScrollKeys();
-        window.scrollBy({
-            left: 0,
-            top: -Math.max(1, window.innerHeight),
-            behavior: "auto"
-        });
+        runDiscreteScroll(-Math.max(1, window.innerHeight));
     },
     [ACTION.SCROLL_PAGE_DOWN]: () => {
         clearScrollKeys();
-        window.scrollBy({
-            left: 0,
-            top: Math.max(1, window.innerHeight),
-            behavior: "auto"
-        });
+        runDiscreteScroll(Math.max(1, window.innerHeight));
     },
     [ACTION.HISTORY_BACK]: () => {
         history.back();

@@ -21,5 +21,7 @@ const state = {
     linkHintInput: "",
     pendingFindUiSearchFrame: null,
     pendingFindUiSearchRequest: null,
-    pendingFindUiDebounceTimer: null
+    pendingFindUiDebounceTimer: null,
+    discreteScrollPending: false,
+    discreteScrollQueue: 0
 };

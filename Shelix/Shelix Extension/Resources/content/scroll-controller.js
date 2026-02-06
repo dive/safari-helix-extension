@@ -60,4 +60,53 @@ function clearScrollKeys() {
     state.isJPressed = false;
     state.isKPressed = false;
     stopScrollingLoop();
+    state.discreteScrollPending = false;
+    state.discreteScrollQueue = 0;
+}
+
+function canUseScrollend() {
+    return "onscrollend" in window;
+}
+
+function finishDiscreteScroll() {
+    state.discreteScrollPending = false;
+    if (state.discreteScrollQueue !== 0) {
+        const queued = state.discreteScrollQueue;
+        state.discreteScrollQueue = 0;
+        runDiscreteScroll(queued);
+    }
+}
+
+function runDiscreteScroll(deltaY) {
+    if (state.discreteScrollPending) {
+        state.discreteScrollQueue += deltaY;
+        return;
+    }
+
+    state.discreteScrollPending = true;
+    state.discreteScrollQueue = 0;
+
+    const useSmooth = canUseScrollend()
+        && !window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
+
+    if (useSmooth) {
+        const target = document.scrollingElement || document.documentElement;
+        const handler = () => {
+            target.removeEventListener("scrollend", handler);
+            finishDiscreteScroll();
+        };
+        target.addEventListener("scrollend", handler, { once: true });
+        setTimeout(() => {
+            target.removeEventListener("scrollend", handler);
+            if (state.discreteScrollPending) {
+                finishDiscreteScroll();
+            }
+        }, 800);
+    }
+
+    window.scrollBy({ left: 0, top: deltaY, behavior: useSmooth ? "smooth" : "auto" });
+
+    if (!useSmooth) {
+        finishDiscreteScroll();
+    }
 }

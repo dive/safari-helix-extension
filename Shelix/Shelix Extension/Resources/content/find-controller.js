@@ -86,15 +86,6 @@ function ensureFindUiStyle() {
             color: HighlightText;
         }
 
-        .${FIND_FALLBACK_MATCH_CLASS} {
-            background: Mark;
-            color: MarkText;
-        }
-
-        .${FIND_FALLBACK_ACTIVE_CLASS} {
-            background: Highlight;
-            color: HighlightText;
-        }
     `;
 
     (document.head || document.documentElement).appendChild(styleElement);
@@ -341,13 +332,8 @@ function clearCustomFindHighlights() {
     CSS.highlights.set(FIND_HIGHLIGHT_ACTIVE_NAME, new Highlight());
 }
 
-function clearFallbackFindHighlights() {
-    // Non-destructive fallback mode does not rewrite DOM text nodes.
-}
-
 function clearFindResults() {
     clearCustomFindHighlights();
-    clearFallbackFindHighlights();
 
     state.findMatches = [];
     state.activeFindMatchIndex = -1;
@@ -479,7 +465,6 @@ function buildFindMatchesWithoutHighlights(entries) {
 
 function rebuildFindResults(query) {
     clearCustomFindHighlights();
-    clearFallbackFindHighlights();
 
     state.findMatches = [];
     state.activeFindMatchIndex = -1;

@@ -33,6 +33,7 @@ const TAB_ACTION = Object.freeze({
 const ACTION = Object.freeze({
     SCROLL_DOWN_START: "scroll.down.start",
     SCROLL_UP_START: "scroll.up.start",
+    SCROLL_TOP: "scroll.top",
     INPUT_PREVIOUS: "input.previous",
     INPUT_NEXT: "input.next",
     INPUT_INSERT_HIGHLIGHTED: "input.insert.highlighted",
@@ -60,6 +61,7 @@ const NORMAL_MODE_ACTIONS = Object.freeze({
 
 const PREFIX_ACTIONS = Object.freeze({
     g: Object.freeze({
+        g: ACTION.SCROLL_TOP,
         n: ACTION.TAB_NEXT,
         p: ACTION.TAB_PREVIOUS
     }),
@@ -76,6 +78,7 @@ const PREFIX_TITLES = Object.freeze({
 });
 
 const ACTION_LABELS = Object.freeze({
+    [ACTION.SCROLL_TOP]: "Top of page",
     [ACTION.TAB_NEXT]: "Next tab",
     [ACTION.TAB_PREVIOUS]: "Previous tab",
     [ACTION.TAB_NEW]: "New tab",
@@ -491,6 +494,16 @@ function runAction(action) {
     if (action === ACTION.SCROLL_UP_START) {
         isKPressed = true;
         ensureScrollingLoop();
+        return;
+    }
+
+    if (action === ACTION.SCROLL_TOP) {
+        clearScrollKeys();
+        window.scrollTo({
+            left: 0,
+            top: 0,
+            behavior: "auto"
+        });
         return;
     }
 

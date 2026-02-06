@@ -7,9 +7,10 @@ function ensureHighlightStyle() {
     styleElement.id = INPUT_HIGHLIGHT_STYLE_ID;
     styleElement.textContent = `
         .${INPUT_HIGHLIGHT_CLASS} {
-            outline: none !important;
+            outline: 2px solid #ff7a00 !important;
+            outline-offset: 1px !important;
             border-color: #ff7a00 !important;
-            box-shadow: inset 0 0 0 1px #ff7a00, 0 0 0 1px rgba(255, 122, 0, 0.2) !important;
+            box-shadow: 0 0 0 1px rgba(255, 122, 0, 0.2) !important;
         }
     `;
 

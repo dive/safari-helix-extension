@@ -8,6 +8,20 @@ Shelix is a Safari extension that brings Helix keybindings to the browser for ke
 - Input-field focus navigation without leaving the keyboard
 - Helix-style tab actions with `g`-prefixed key sequences
 
+## Content Script Layout
+- `shared/constants.js`: shared action IDs, keymaps, and tab-action protocol
+- `content/config.js`: content-script constants and selectors
+- `content/state.js`: centralized mutable runtime state
+- `content/key-utils.js`: key normalization and key label formatting
+- `content/dom-utils.js`: editable/visibility helpers and DOM predicates
+- `content/ui.js`: input highlight and key-hint popup UI
+- `content/scroll-controller.js`: continuous scroll loop and key state
+- `content/input-controller.js`: input highlight/focus mode transitions
+- `content/find-controller.js`: find UI, match collection, and navigation
+- `content/action-dispatch.js`: action handler map and prefix handling
+- `content/events.js`: keyboard/focus/visibility event wiring
+- `content.js`: one-time bootstrap guard and initialization
+
 ## Requirements
 - Safari on macOS (Safari 14 or later recommended)
 - Optional: Safari on iOS/iPadOS (15 or later) if you build and distribute the iOS variant
@@ -41,6 +55,7 @@ Notes:
 - Pressing `Escape` in Normal mode clears the current input highlight.
 - `/` starts Find from the page boundary and highlights the first visible match.
 - `n`/`N` continue through visible matches only (hidden/non-rendered matches are skipped).
+- On engines without CSS Highlights support, Find still navigates matches but visual match highlighting may be limited.
 - In the Find bar, `Enter`/`Shift+Enter` move next/previous and `Escape` closes it.
 - Tab actions run only in Normal mode.
 - Prefix keys (`Space`, `g`) show a bottom-right key-hint popup with available follow-up actions.
@@ -53,6 +68,14 @@ Shelix is designed to request only what it needs for keyboard-first browsing.
 ## Troubleshooting
 - If you do not see the extension, restart Safari and check `Safari Settings > Extensions`.
 - Ensure the extension is enabled and has access for the current site.
+
+## Behavior Verification Checklist
+- Verify `j`/`k` starts and stops smooth scrolling on keydown/keyup.
+- Verify `Ctrl-d`/`Ctrl-u`, `g g`, and `g e` navigation in Normal mode.
+- Verify `h`/`l` highlight changes and `Enter`/`i` enters Insert mode.
+- Verify `Escape` exits Insert mode, clears highlight in Normal mode, and closes Find UI.
+- Verify `/` opens Find UI and `n`/`N` navigates visible matches.
+- Verify `Space n`, `Space q`, `Space d`, `g n`, and `g p` trigger tab actions.
 
 ## Contributing
 See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup, testing guidance, and pull request expectations.

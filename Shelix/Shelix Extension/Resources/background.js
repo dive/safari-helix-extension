@@ -1,11 +1,11 @@
-const TAB_ACTION_MESSAGE_TYPE = "shelix.tabAction";
-const TAB_ACTION = Object.freeze({
-    NEXT: "next",
-    PREVIOUS: "previous",
-    NEW: "new",
-    CLOSE: "close",
-    DUPLICATE: "duplicate"
-});
+import "./constants.js";
+
+const shelixShared = globalThis.ShelixShared;
+if (!shelixShared) {
+    throw new Error("Shelix shared constants must load before background script.");
+}
+
+const { TAB_ACTION_MESSAGE_TYPE, TAB_ACTION } = shelixShared;
 
 browser.runtime.onInstalled.addListener(() => {
     console.log("Shelix extension installed.");
@@ -90,28 +90,28 @@ async function duplicateTab(sender) {
     await browser.tabs.duplicate(currentTab.id);
 }
 
+const TAB_ACTION_HANDLERS = Object.freeze({
+    [TAB_ACTION.NEXT]: (sender) => switchTab(sender, 1),
+    [TAB_ACTION.PREVIOUS]: (sender) => switchTab(sender, -1),
+    [TAB_ACTION.NEW]: (sender) => createTab(sender),
+    [TAB_ACTION.CLOSE]: (sender) => closeTab(sender),
+    [TAB_ACTION.DUPLICATE]: (sender) => duplicateTab(sender)
+});
+
 browser.runtime.onMessage.addListener(async (message, sender) => {
     if (message?.type !== TAB_ACTION_MESSAGE_TYPE) {
         return null;
     }
 
-    try {
-        if (message.action === TAB_ACTION.NEXT) {
-            await switchTab(sender, 1);
-        } else if (message.action === TAB_ACTION.PREVIOUS) {
-            await switchTab(sender, -1);
-        } else if (message.action === TAB_ACTION.NEW) {
-            await createTab(sender);
-        } else if (message.action === TAB_ACTION.CLOSE) {
-            await closeTab(sender);
-        } else if (message.action === TAB_ACTION.DUPLICATE) {
-            await duplicateTab(sender);
-        } else {
-            return {
-                ok: false
-            };
-        }
+    const handler = TAB_ACTION_HANDLERS[message.action];
+    if (!handler) {
+        return {
+            ok: false
+        };
+    }
 
+    try {
+        await handler(sender);
         return {
             ok: true
         };

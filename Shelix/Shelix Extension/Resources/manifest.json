@@ -20,7 +20,20 @@
     },
 
     "content_scripts": [{
-        "js": [ "content.js" ],
+        "js": [
+            "constants.js",
+            "config.js",
+            "state.js",
+            "key-utils.js",
+            "dom-utils.js",
+            "ui.js",
+            "scroll-controller.js",
+            "input-controller.js",
+            "find-controller.js",
+            "action-dispatch.js",
+            "events.js",
+            "content.js"
+        ],
         "matches": [ "<all_urls>" ]
     }],
 

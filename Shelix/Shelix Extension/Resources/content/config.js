@@ -47,4 +47,5 @@ const FIND_HIGHLIGHT_ACTIVE_NAME = "shelix-find-active";
 const FIND_FALLBACK_MATCH_CLASS = "shelix-find-highlight-match";
 const FIND_FALLBACK_ACTIVE_CLASS = "shelix-find-highlight-active";
 const FIND_MATCH_LIMIT = 2000;
+const FIND_DEBOUNCE_MS = 80;
 const FIND_EXCLUDED_SEARCH_ANCESTOR_SELECTOR = "script, style, noscript, textarea, option";

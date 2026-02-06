@@ -260,16 +260,43 @@ function closeFindUi() {
         return;
     }
 
-    if (state.pendingFindUiSearchFrame !== null) {
-        window.cancelAnimationFrame(state.pendingFindUiSearchFrame);
-        state.pendingFindUiSearchFrame = null;
-    }
-    state.pendingFindUiSearchRequest = null;
+    cancelPendingFindSchedule();
 
     findUi.container.hidden = true;
     if (isTargetInsideFindUi(document.activeElement)) {
         findUi.input.blur();
     }
+}
+
+function cancelPendingFindSchedule() {
+    if (state.pendingFindUiDebounceTimer !== null) {
+        clearTimeout(state.pendingFindUiDebounceTimer);
+        state.pendingFindUiDebounceTimer = null;
+    }
+
+    if (state.pendingFindUiSearchFrame !== null) {
+        window.cancelAnimationFrame(state.pendingFindUiSearchFrame);
+        state.pendingFindUiSearchFrame = null;
+    }
+
+    state.pendingFindUiSearchRequest = null;
+}
+
+function flushPendingFindRequest() {
+    state.pendingFindUiSearchFrame = null;
+
+    const request = state.pendingFindUiSearchRequest;
+    state.pendingFindUiSearchRequest = null;
+    if (!request) {
+        return;
+    }
+
+    runFindWithQueryFromUi(
+        request.query,
+        request.backwards,
+        request.startFromBoundary,
+        request.selectionSnapshot
+    );
 }
 
 function scheduleFindFromUi(query, backwards, startFromBoundary, selectionSnapshot) {
@@ -280,26 +307,19 @@ function scheduleFindFromUi(query, backwards, startFromBoundary, selectionSnapsh
         selectionSnapshot
     };
 
-    if (state.pendingFindUiSearchFrame !== null) {
-        window.cancelAnimationFrame(state.pendingFindUiSearchFrame);
-    }
+    cancelPendingFindSchedule();
 
-    state.pendingFindUiSearchFrame = window.requestAnimationFrame(() => {
-        state.pendingFindUiSearchFrame = null;
+    state.pendingFindUiSearchRequest = {
+        query,
+        backwards,
+        startFromBoundary,
+        selectionSnapshot
+    };
 
-        const request = state.pendingFindUiSearchRequest;
-        state.pendingFindUiSearchRequest = null;
-        if (!request) {
-            return;
-        }
-
-        runFindWithQueryFromUi(
-            request.query,
-            request.backwards,
-            request.startFromBoundary,
-            request.selectionSnapshot
-        );
-    });
+    state.pendingFindUiDebounceTimer = setTimeout(() => {
+        state.pendingFindUiDebounceTimer = null;
+        state.pendingFindUiSearchFrame = window.requestAnimationFrame(flushPendingFindRequest);
+    }, FIND_DEBOUNCE_MS);
 }
 
 function canUseCustomFindHighlights() {

@@ -580,12 +580,132 @@ function requestTabAction(action) {
     });
 }
 
-function findInPage(query, backwards) {
+function getCurrentFindSelectionRange() {
+    const selection = window.getSelection();
+    if (!selection || selection.rangeCount === 0) {
+        return null;
+    }
+
+    return selection.getRangeAt(0);
+}
+
+function getFindRangeContainerElement(range) {
+    if (range.startContainer instanceof Element) {
+        return range.startContainer;
+    }
+
+    return range.startContainer.parentElement;
+}
+
+function isElementVisibleForFind(element) {
+    if (!(element instanceof Element) || !element.isConnected) {
+        return false;
+    }
+
+    let current = element;
+    while (current) {
+        if (current instanceof HTMLElement && current.hidden) {
+            return false;
+        }
+
+        const style = window.getComputedStyle(current);
+        if (style.display === "none" || style.visibility === "hidden" || style.visibility === "collapse") {
+            return false;
+        }
+
+        current = current.parentElement;
+    }
+
+    const rects = element.getClientRects();
+    for (const rect of rects) {
+        if (rect.width > 0 && rect.height > 0) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+function isFindSelectionVisible() {
+    const range = getCurrentFindSelectionRange();
+    if (!range || range.collapsed) {
+        return false;
+    }
+
+    const container = getFindRangeContainerElement(range);
+    if (!container || !isElementVisibleForFind(container)) {
+        return false;
+    }
+
+    const rects = range.getClientRects();
+    for (const rect of rects) {
+        if (rect.width > 0 && rect.height > 0) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+function moveFindSelectionToBoundary(backwards) {
+    const selection = window.getSelection();
+    const root = document.body || document.documentElement;
+    if (!selection || !root) {
+        return;
+    }
+
+    const range = document.createRange();
+    range.selectNodeContents(root);
+    range.collapse(Boolean(backwards));
+
+    selection.removeAllRanges();
+    selection.addRange(range);
+}
+
+function findInPage(query, backwards, startFromBoundary = false) {
     if (typeof window.find !== "function") {
         return false;
     }
 
-    return window.find(query, false, backwards, true, false, false, false);
+    if (startFromBoundary) {
+        moveFindSelectionToBoundary(backwards);
+    }
+
+    const seenMatches = [];
+
+    while (true) {
+        const didMatch = window.find(query, false, backwards, true, false, false, false);
+        if (!didMatch) {
+            return false;
+        }
+
+        const range = getCurrentFindSelectionRange();
+        if (!range) {
+            return false;
+        }
+
+        const alreadySeen = seenMatches.some((match) => (
+            match.startContainer === range.startContainer
+            && match.startOffset === range.startOffset
+            && match.endContainer === range.endContainer
+            && match.endOffset === range.endOffset
+        ));
+
+        if (alreadySeen) {
+            return false;
+        }
+
+        seenMatches.push({
+            startContainer: range.startContainer,
+            startOffset: range.startOffset,
+            endContainer: range.endContainer,
+            endOffset: range.endOffset
+        });
+
+        if (isFindSelectionVisible()) {
+            return true;
+        }
+    }
 }
 
 function openFindPrompt() {
@@ -661,7 +781,7 @@ function runAction(action) {
     if (action === ACTION.FIND_OPEN) {
         clearScrollKeys();
         if (openFindPrompt()) {
-            findInPage(lastFindQuery, false);
+            findInPage(lastFindQuery, false, true);
         }
 
         return;

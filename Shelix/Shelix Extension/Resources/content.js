@@ -16,27 +16,55 @@ const INPUT_FIELD_SELECTOR = [
 ].join(",");
 
 const SCROLL_PIXELS_PER_SECOND = 1200;
+const INPUT_HIGHLIGHT_CLASS = "shelix-input-highlight";
+const INPUT_HIGHLIGHT_STYLE_ID = "shelix-input-highlight-style";
 
 let scrollAnimationFrame = null;
 let lastScrollFrameTime = 0;
 let isJPressed = false;
 let isKPressed = false;
+let highlightedField = null;
+let mode = "normal";
 
-function isEditableTarget(target) {
+function ensureHighlightStyle() {
+    if (document.getElementById(INPUT_HIGHLIGHT_STYLE_ID)) {
+        return;
+    }
+
+    const styleElement = document.createElement("style");
+    styleElement.id = INPUT_HIGHLIGHT_STYLE_ID;
+    styleElement.textContent = `
+        .${INPUT_HIGHLIGHT_CLASS} {
+            outline: none !important;
+            border-color: #ff7a00 !important;
+            box-shadow: inset 0 0 0 1px #ff7a00, 0 0 0 1px rgba(255, 122, 0, 0.2) !important;
+        }
+    `;
+
+    (document.head || document.documentElement).appendChild(styleElement);
+}
+
+function getEditableTarget(target) {
     if (!(target instanceof Element)) {
-        return false;
+        return null;
     }
 
     const editable = target.closest(INPUT_FIELD_SELECTOR);
     if (!editable) {
-        return false;
+        return null;
     }
 
     if (editable instanceof HTMLInputElement || editable instanceof HTMLTextAreaElement) {
-        return !editable.disabled && !editable.readOnly;
+        if (editable.disabled || editable.readOnly) {
+            return null;
+        }
     }
 
-    return true;
+    return editable;
+}
+
+function isEditableTarget(target) {
+    return getEditableTarget(target) !== null;
 }
 
 function isNavigableField(field) {
@@ -63,24 +91,115 @@ function getNavigableFields() {
     return Array.from(document.querySelectorAll(INPUT_FIELD_SELECTOR)).filter(isNavigableField);
 }
 
-function focusRelativeField(direction) {
-    const fields = getNavigableFields();
-    if (fields.length === 0) {
+function syncHighlightVisibility() {
+    if (!highlightedField || !highlightedField.isConnected) {
         return;
     }
 
-    const activeElement = document.activeElement;
-    const currentIndex = fields.indexOf(activeElement);
+    if (mode === "normal") {
+        highlightedField.classList.add(INPUT_HIGHLIGHT_CLASS);
+    } else {
+        highlightedField.classList.remove(INPUT_HIGHLIGHT_CLASS);
+    }
+}
+
+function setMode(nextMode) {
+    mode = nextMode;
+    syncHighlightVisibility();
+}
+
+function setHighlightedField(field) {
+    if (highlightedField && highlightedField.isConnected) {
+        highlightedField.classList.remove(INPUT_HIGHLIGHT_CLASS);
+    }
+
+    highlightedField = field;
+
+    if (highlightedField) {
+        ensureHighlightStyle();
+        syncHighlightVisibility();
+    }
+}
+
+function getHighlightedField(fields) {
+    if (!highlightedField || !highlightedField.isConnected || !isNavigableField(highlightedField)) {
+        setHighlightedField(null);
+        return null;
+    }
+
+    if (Array.isArray(fields) && !fields.includes(highlightedField)) {
+        setHighlightedField(null);
+        return null;
+    }
+
+    return highlightedField;
+}
+
+function ensureHighlightedField() {
+    const fields = getNavigableFields();
+    if (fields.length === 0) {
+        setHighlightedField(null);
+        return null;
+    }
+
+    const existingHighlightedField = getHighlightedField(fields);
+    if (existingHighlightedField) {
+        return existingHighlightedField;
+    }
+
+    const activeEditableField = getEditableTarget(document.activeElement);
+    if (activeEditableField && fields.includes(activeEditableField)) {
+        setHighlightedField(activeEditableField);
+        return activeEditableField;
+    }
+
+    setHighlightedField(fields[0]);
+    return fields[0];
+}
+
+function highlightRelativeField(direction) {
+    const fields = getNavigableFields();
+    if (fields.length === 0) {
+        setHighlightedField(null);
+        return;
+    }
+
+    const currentField = getHighlightedField(fields);
+    const currentIndex = currentField ? fields.indexOf(currentField) : -1;
     const nextIndex = currentIndex === -1
         ? (direction > 0 ? 0 : fields.length - 1)
         : (currentIndex + direction + fields.length) % fields.length;
 
     const nextField = fields[nextIndex];
-    nextField.focus();
+    setHighlightedField(nextField);
     nextField.scrollIntoView({
         block: "center",
         inline: "nearest"
     });
+}
+
+function enterInsertMode(field) {
+    if (!isNavigableField(field)) {
+        return;
+    }
+
+    setMode("insert");
+    clearScrollKeys();
+    setHighlightedField(field);
+    field.focus({
+        preventScroll: true
+    });
+}
+
+function exitInsertMode() {
+    const activeEditableField = getEditableTarget(document.activeElement);
+    if (activeEditableField instanceof HTMLElement) {
+        setHighlightedField(activeEditableField);
+        activeEditableField.blur();
+    }
+
+    setMode("normal");
+    clearScrollKeys();
 }
 
 function getActiveScrollDirection() {
@@ -143,11 +262,32 @@ document.addEventListener("keydown", (event) => {
         return;
     }
 
+    if (mode === "insert" && !isEditableTarget(document.activeElement)) {
+        setMode("normal");
+    }
+
+    const key = event.key.toLowerCase();
+    if (key === "escape" && mode === "insert") {
+        event.preventDefault();
+        exitInsertMode();
+        return;
+    }
+
+    if ((key === "enter" || key === "o") && mode === "normal") {
+        const field = ensureHighlightedField();
+        if (!field) {
+            return;
+        }
+
+        event.preventDefault();
+        enterInsertMode(field);
+        return;
+    }
+
     if (isEditableTarget(event.target)) {
         return;
     }
 
-    const key = event.key.toLowerCase();
     if (key === "j") {
         event.preventDefault();
         isJPressed = true;
@@ -164,13 +304,13 @@ document.addEventListener("keydown", (event) => {
 
     if (key === "h") {
         event.preventDefault();
-        focusRelativeField(-1);
+        highlightRelativeField(-1);
         return;
     }
 
     if (key === "l") {
         event.preventDefault();
-        focusRelativeField(1);
+        highlightRelativeField(1);
     }
 }, {
     capture: true
@@ -202,4 +342,26 @@ document.addEventListener("visibilitychange", () => {
     if (document.visibilityState !== "visible") {
         clearScrollKeys();
     }
+});
+
+document.addEventListener("focusin", (event) => {
+    const editableField = getEditableTarget(event.target);
+    if (!editableField) {
+        return;
+    }
+
+    setMode("insert");
+    setHighlightedField(editableField);
+}, {
+    capture: true
+});
+
+document.addEventListener("focusout", () => {
+    window.requestAnimationFrame(() => {
+        if (mode === "insert" && !isEditableTarget(document.activeElement)) {
+            setMode("normal");
+        }
+    });
+}, {
+    capture: true
 });

@@ -23,11 +23,14 @@ Shelix is a Safari extension that brings Helix keybindings to the browser for ke
 
 ## Keybindings
 - `j` / `k`: smooth continuous scrolling down/up while held
-- `h` / `l`: jump focus to previous/next input field
+- `h` / `l`: move highlighted input selection to previous/next input field
+- `Enter` or `o`: enter Insert mode and focus the highlighted input field
+- `Escape`: leave Insert mode and return to Normal mode
 
 Notes:
-- Keybindings run only when you are not typing in an editable field.
-- Input-field jumps include text inputs, textareas, and contenteditable elements.
+- In Normal mode, `h`/`l` only changes highlight and does not activate editing.
+- In Insert mode, typing works normally in the focused field.
+- Input-field selection includes text inputs, textareas, and contenteditable elements.
 
 ## Permissions
 Shelix is designed to request only what it needs for keyboard-first browsing.
@@ -35,6 +38,12 @@ Shelix is designed to request only what it needs for keyboard-first browsing.
 ## Troubleshooting
 - If you do not see the extension, restart Safari and check `Safari Settings > Extensions`.
 - Ensure the extension is enabled and has access for the current site.
+
+## Testing
+- `https://en.wikipedia.org/wiki/Safari_(web_browser)` for long-page smooth scrolling checks (`j/k`).
+- `https://httpbin.org/forms/post` for multi-field form navigation (`h/l`, `Enter`/`o`, `Escape`).
+- `https://www.w3schools.com/html/html_forms.asp` for mixed form controls and repeated mode switching.
+- `https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input` for docs-page scrolling plus editable-field transitions.
 
 ## Project Structure
 - `Shelix/Shelix`: macOS host app used to install and manage the Safari extension.

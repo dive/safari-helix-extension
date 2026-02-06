@@ -25,6 +25,17 @@ const INPUT_FIELD_SELECTOR = [
     "input[type='url']",
     "input[type='tel']",
     "input[type='number']",
+    "input[type='checkbox']",
+    "input[type='radio']",
+    "input[type='range']",
+    "input[type='date']",
+    "input[type='time']",
+    "input[type='datetime-local']",
+    "input[type='month']",
+    "input[type='week']",
+    "input[type='color']",
+    "input[type='file']",
+    "select",
     "textarea",
     "[contenteditable]:not([contenteditable='false'])"
 ].join(",");

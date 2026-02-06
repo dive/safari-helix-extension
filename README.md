@@ -64,7 +64,7 @@ Notes:
 - Tab actions run only in Normal mode.
 - When Shelix is disabled, page key handling is suspended until you toggle it back on.
 - Prefix keys (`Space`, `g`) show a bottom-right key-hint popup with available follow-up actions.
-- Input-field selection includes text inputs, textareas, and contenteditable elements.
+- Input-field selection includes text inputs, common form controls (checkbox/radio/select/date/range/color/file), textareas, and contenteditable elements.
 - `f` in Helix is "find next char"; here it is repurposed for browser-specific link hint navigation (similar to Vimium's `f`).
 - You can change the toggle shortcut from the extension popup (`Record Shortcut`) or from Safari keyboard shortcut settings.
 

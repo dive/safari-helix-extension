@@ -42,6 +42,10 @@ function getEditableTarget(target) {
         }
     }
 
+    if (editable instanceof HTMLSelectElement && editable.disabled) {
+        return null;
+    }
+
     return editable;
 }
 
@@ -63,6 +67,10 @@ function isNavigableField(field) {
         if (field.disabled || field.readOnly) {
             return false;
         }
+    }
+
+    if (field instanceof HTMLSelectElement && field.disabled) {
+        return false;
     }
 
     const rect = field.getBoundingClientRect();
